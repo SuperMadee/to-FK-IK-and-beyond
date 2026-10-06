@@ -299,10 +299,10 @@ The **geometric Jacobian** maps joint velocities to linear and angular velocity;
 
 | Era | Period | Focus |
 |-----|--------|-------|
-| **Mechanism-Theory Age** | 1875–1968 | Linkages and lower pairs, screw theory, Denavit-Hartenberg notation, the Gough-Stewart platform |
-| **Manipulator Age** | 1968–1990 | Closed-form IK for industrial arms, resolved-rate control, Jacobians, manipulability, redundancy resolution |
-| **Geometric & Algorithmic Age** | 1990–2015 | Lie-group formulations, the general 6R solution, parallel-robot singularities, task-priority and QP-based whole-body IK |
-| **Differentiable & Learned Age** | 2015–present | Automatic differentiation, GPU-batched solvers, generative IK, learned kinematic models, large-scale motion retargeting |
+| **Mechanism-Theory Age** | 1875&#8288;–&#8288;1968 | Linkages and lower pairs, screw theory, Denavit-Hartenberg notation, the Gough-Stewart platform |
+| **Manipulator Age** | 1968&#8288;–&#8288;1990 | Closed-form IK for industrial arms, resolved-rate control, Jacobians, manipulability, redundancy resolution |
+| **Geometric & Algorithmic Age** | 1990&#8288;–&#8288;2015 | Lie-group formulations, the general 6R solution, parallel-robot singularities, task-priority and QP-based whole-body IK |
+| **Differentiable & Learned Age** | 2015&#8288;–&#8288;present | Automatic differentiation, GPU-batched solvers, generative IK, learned kinematic models, large-scale motion retargeting |
 
 This periodization is a reading aid assembled for this repository, not a standard from the literature; the boundaries overlap.
 
