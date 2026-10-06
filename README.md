@@ -87,14 +87,14 @@ This repository collects robot kinematics research, featuring:
 
 | Category | Description | Key Topics |
 |----------|-------------|------------|
-| **📐 Modeling** | Describing a mechanism's geometry | Denavit-Hartenberg parameters, product of exponentials, screw theory, URDF |
-| **🔄 Representations** | Describing rotation and pose | Rotation matrices, quaternions, dual quaternions, Lie groups SO(3) and SE(3) |
-| **🧮 Analytical IK** | Closed-form joint solutions | Pieper's criterion, subproblem decomposition, IKFast, general 6R |
-| **🔁 Numerical IK** | Iterative and optimization-based solvers | Damped least squares, Levenberg-Marquardt, TRAC-IK, RelaxedIK, QP-based IK |
-| **📈 Differential Kinematics** | Velocity-level mapping and control | Jacobians, manipulability, null-space projection, task priority, singularities |
-| **🧠 Learning-based** | Learned IK and learned kinematic models | IKFlow, generative IK, self-modeling, Neural Jacobian Fields |
-| **🕸 Beyond Serial Arms** | Other mechanism families | Parallel robots, wheeled robots, legged robots and humanoids, continuum robots |
-| **🎯 Calibration** | Making the model match the hardware | Geometric parameter identification, hand-eye calibration, observability indices |
+| **📐&nbsp;Modeling** | Describing a mechanism's geometry | Denavit-Hartenberg parameters, product of exponentials, screw theory, URDF |
+| **🔄&nbsp;Representations** | Describing rotation and pose | Rotation matrices, quaternions, dual quaternions, Lie groups SO(3) and SE(3) |
+| **🧮&nbsp;Analytical&nbsp;IK** | Closed-form joint solutions | Pieper's criterion, subproblem decomposition, IKFast, general 6R |
+| **🔁&nbsp;Numerical&nbsp;IK** | Iterative and optimization-based solvers | Damped least squares, Levenberg-Marquardt, TRAC-IK, RelaxedIK, QP-based IK |
+| **📈&nbsp;Differential&nbsp;Kinematics** | Velocity-level mapping and control | Jacobians, manipulability, null-space projection, task priority, singularities |
+| **🧠&nbsp;Learning&#8209;based** | Learned IK and learned kinematic models | IKFlow, generative IK, self-modeling, Neural Jacobian Fields |
+| **🕸&nbsp;Beyond&nbsp;Serial&nbsp;Arms** | Other mechanism families | Parallel robots, wheeled robots, legged robots and humanoids, continuum robots |
+| **🎯&nbsp;Calibration** | Making the model match the hardware | Geometric parameter identification, hand-eye calibration, observability indices |
 
 This repository synthesizes insights from surveys, textbooks, and tutorials on kinematics (see [References](#-references)).
 
@@ -110,9 +110,9 @@ Kinematics is distinct from related concepts:
 |---------|-------------|----------------|
 | **Statics** | Forces and torques on a mechanism at rest | No motion; linked to kinematics through the Jacobian transpose |
 | **Dynamics** | How forces and torques produce motion | Adds mass, inertia, and time; kinematics is the geometric part it builds on |
-| **Motion Planning** | Finding a collision-free path between configurations | Searches the space that kinematics defines; calls FK and IK as subroutines |
+| **Motion&nbsp;Planning** | Finding a collision-free path between configurations | Searches the space that kinematics defines; calls FK and IK as subroutines |
 | **Control** | Making the real robot follow a desired motion | Closes a feedback loop; kinematics provides the model inside it |
-| **State Estimation** | Inferring configuration or pose from sensors | Uses kinematic models as measurement or motion models |
+| **State&nbsp;Estimation** | Inferring configuration or pose from sensors | Uses kinematic models as measurement or motion models |
 | **Kinematics** | The geometry of motion: position, velocity, and acceleration relationships | No forces, no masses; purely how joint motion maps to body motion |
 
 ### The Kinematics Problem at a Glance
@@ -121,9 +121,9 @@ A robot lives in two spaces at once. **Joint space** is the set of joint values 
 
 | Question | Given | Find | Relation | Character |
 |----------|-------|------|----------|-----------|
-| **Forward kinematics** | Joint values $q$ | Pose $x$ | $x = f(q)$ | One answer, computed directly |
-| **Inverse kinematics** | Desired pose $x_d$ | Joint values $q$ | $f(q) = x_d$ | Zero, several, or infinitely many answers |
-| **Differential kinematics** | Joint velocities $\dot{q}$ | End-effector velocity $\dot{x}$ | $\dot{x} = J(q) \dot{q}$ | Linear at each configuration |
+| **Forward&nbsp;kinematics** | Joint values $q$ | Pose $x$ | $x = f(q)$ | One answer, computed directly |
+| **Inverse&nbsp;kinematics** | Desired pose $x_d$ | Joint values $q$ | $f(q) = x_d$ | Zero, several, or infinitely many answers |
+| **Differential&nbsp;kinematics** | Joint velocities $\dot{q}$ | End-effector velocity $\dot{x}$ | $\dot{x} = J(q) \dot{q}$ | Linear at each configuration |
 
 Almost every method in this repository is a choice of *which mechanism defines* $f$, *how pose and its error are represented*, and *how the inverse or differential problem is solved*. The next three sections take the questions one at a time.
 
@@ -182,10 +182,10 @@ x = l_1 c_1 + l_2 c_{12}, \qquad y = l_1 s_1 + l_2 s_{12}, \qquad \phi = \theta_
 
 | Mechanism | Forward Kinematics | Why |
 |-----------|--------------------|-----|
-| **Serial chain** | Direct and unique | A product of link transforms |
-| **Parallel mechanism** | Hard, with several solutions (up to 40 for a general Gough-Stewart platform) | The loop-closure equations must be solved |
-| **Wheeled robot** | Requires integrating velocities over time | Rolling constraints are nonholonomic |
-| **Continuum robot** | Requires a shape model | There are no discrete joints |
+| **Serial&nbsp;chain** | Direct and unique | A product of link transforms |
+| **Parallel&nbsp;mechanism** | Hard, with several solutions (up to 40 for a general Gough-Stewart platform) | The loop-closure equations must be solved |
+| **Wheeled&nbsp;robot** | Requires integrating velocities over time | Rolling constraints are nonholonomic |
+| **Continuum&nbsp;robot** | Requires a shape model | There are no discrete joints |
 
 This section follows Siciliano et al. (Chapter 2) and Spong, Hutchinson, and Vidyasagar for the Denavit-Hartenberg form, and Lynch and Park (Chapter 4) for the product of exponentials. A fully worked case is in [Solved Problem 1](#-solved-problem-1-forward-kinematics), and papers are collected under [Forward Kinematics & Modeling](#-forward-kinematics--modeling).
 
@@ -284,12 +284,12 @@ so the arm is singular exactly when $\theta_2 = 0$ or $\theta_2 = \pi$, that is,
 
 | Use | Relation | What It Gives |
 |-----|----------|---------------|
-| **Velocity mapping** | $\dot{x} = J(q) \dot{q}$ | End-effector velocity from joint velocities |
+| **Velocity&nbsp;mapping** | $\dot{x} = J(q) \dot{q}$ | End-effector velocity from joint velocities |
 | **Statics** | $\tau = J(q)^{\top} F$ | Joint torques that balance an end-effector force |
-| **Singularity detection** | $\mathrm{rank} J(q) < \min(m, n)$ | Configurations where the Jacobian loses rank and some task direction cannot be produced |
-| **Numerical inverse kinematics** | $\Delta q = J^{+} e$ | A joint step that reduces the pose error $e$ |
+| **Singularity&nbsp;detection** | $\mathrm{rank} J(q) < \min(m, n)$ | Configurations where the Jacobian loses rank and some task direction cannot be produced |
+| **Numerical&nbsp;inverse&nbsp;kinematics** | $\Delta q = J^{+} e$ | A joint step that reduces the pose error $e$ |
 | **Manipulability** | $w = \sqrt{\det(J J^{\top})}$ | A scalar measure of distance from singularity |
-| **Redundancy resolution** | $\dot{q} = J^{+}\dot{x} + (I - J^{+}J) \dot{q}_0$ | Secondary motion that does not disturb the task |
+| **Redundancy&nbsp;resolution** | $\dot{q} = J^{+}\dot{x} + (I - J^{+}J) \dot{q}_0$ | Secondary motion that does not disturb the task |
 
 These relations are standard and follow Siciliano et al. (Chapter 3) and Lynch and Park (Chapters 5 and 6); the manipulability measure is Yoshikawa's.
 
@@ -299,10 +299,10 @@ The **geometric Jacobian** maps joint velocities to linear and angular velocity;
 
 | Era | Period | Focus |
 |-----|--------|-------|
-| **Mechanism-Theory Age** | 1875&#8288;–&#8288;1968 | Linkages and lower pairs, screw theory, Denavit-Hartenberg notation, the Gough-Stewart platform |
-| **Manipulator Age** | 1968&#8288;–&#8288;1990 | Closed-form IK for industrial arms, resolved-rate control, Jacobians, manipulability, redundancy resolution |
-| **Geometric & Algorithmic Age** | 1990&#8288;–&#8288;2015 | Lie-group formulations, the general 6R solution, parallel-robot singularities, task-priority and QP-based whole-body IK |
-| **Differentiable & Learned Age** | 2015&#8288;–&#8288;present | Automatic differentiation, GPU-batched solvers, generative IK, learned kinematic models, large-scale motion retargeting |
+| **Mechanism&#8209;Theory&nbsp;Age** | 1875&#8288;–&#8288;1968 | Linkages and lower pairs, screw theory, Denavit-Hartenberg notation, the Gough-Stewart platform |
+| **Manipulator&nbsp;Age** | 1968&#8288;–&#8288;1990 | Closed-form IK for industrial arms, resolved-rate control, Jacobians, manipulability, redundancy resolution |
+| **Geometric&nbsp;&&nbsp;Algorithmic&nbsp;Age** | 1990&#8288;–&#8288;2015 | Lie-group formulations, the general 6R solution, parallel-robot singularities, task-priority and QP-based whole-body IK |
+| **Differentiable&nbsp;&&nbsp;Learned&nbsp;Age** | 2015&#8288;–&#8288;present | Automatic differentiation, GPU-batched solvers, generative IK, learned kinematic models, large-scale motion retargeting |
 
 This periodization is a reading aid assembled for this repository, not a standard from the literature; the boundaries overlap.
 
@@ -320,11 +320,11 @@ The mechanism determines WHAT the kinematic map looks like.
 
 | Mechanism | Structure | Strengths | Kinematic Difficulty |
 |-----------|-----------|-----------|----------------------|
-| **🦾 Serial Chain** | Links connected end to end (industrial arms, cobots) | Large workspace, simple forward kinematics | Inverse kinematics has multiple or infinitely many solutions |
-| **🕸 Parallel / Closed Chain** | Several legs share one platform (Stewart platform, Delta) | Stiff, fast, precise, high payload-to-weight | Forward kinematics is hard; small workspace; many singularity types |
-| **🚗 Wheeled / Mobile Base** | Wheels rolling on a surface | Unbounded workspace, efficient | Nonholonomic constraints: not every velocity is possible |
-| **🦿 Floating Base** | Tree of limbs on an unactuated base (legged robots, humanoids) | Mobility over rough terrain, whole-body reach | Base is only controlled through contacts; many tasks compete |
-| **🐍 Continuum / Soft** | Continuously bending backbone (tendon robots, concentric tubes) | Compliance, access through narrow paths | Infinite-dimensional shape; kinematics couples with mechanics |
+| **🦾&nbsp;Serial&nbsp;Chain** | Links connected end to end (industrial arms, cobots) | Large workspace, simple forward kinematics | Inverse kinematics has multiple or infinitely many solutions |
+| **🕸&nbsp;Parallel&nbsp;/&nbsp;Closed&nbsp;Chain** | Several legs share one platform (Stewart platform, Delta) | Stiff, fast, precise, high payload-to-weight | Forward kinematics is hard; small workspace; many singularity types |
+| **🚗&nbsp;Wheeled&nbsp;/&nbsp;Mobile&nbsp;Base** | Wheels rolling on a surface | Unbounded workspace, efficient | Nonholonomic constraints: not every velocity is possible |
+| **🦿&nbsp;Floating&nbsp;Base** | Tree of limbs on an unactuated base (legged robots, humanoids) | Mobility over rough terrain, whole-body reach | Base is only controlled through contacts; many tasks compete |
+| **🐍&nbsp;Continuum&nbsp;/&nbsp;Soft** | Continuously bending backbone (tendon robots, concentric tubes) | Compliance, access through narrow paths | Infinite-dimensional shape; kinematics couples with mechanics |
 
 #### 🦾 Serial Chains
 
@@ -332,9 +332,9 @@ The mechanism determines WHAT the kinematic map looks like.
 
 | Class | Degrees of Freedom | Inverse Kinematics |
 |-------|--------------------|--------------------|
-| **Non-redundant** | Equal to the task dimension (6 for full pose) | Finite number of solutions; up to 16 for a general 6R arm, 8 for most industrial arms |
+| **Non&#8209;redundant** | Equal to the task dimension (6 for full pose) | Finite number of solutions; up to 16 for a general 6R arm, 8 for most industrial arms |
 | **Redundant** | More than the task needs (7-DOF arms) | Infinitely many solutions forming a self-motion manifold |
-| **Hyper-redundant** | Far more than the task needs (snake arms) | Usually solved through a backbone curve rather than joint by joint |
+| **Hyper&#8209;redundant** | Far more than the task needs (snake arms) | Usually solved through a backbone curve rather than joint by joint |
 
 #### 🕸 Parallel and Closed Chains
 
@@ -347,7 +347,7 @@ The mechanism determines WHAT the kinematic map looks like.
 | Model | Constraint | Typical Platform |
 |-------|------------|------------------|
 | **Differential drive / unicycle** | Nonholonomic; can turn in place | Indoor service and research robots |
-| **Bicycle / Ackermann** | Nonholonomic; minimum turning radius | Cars, autonomous vehicles |
+| **Bicycle&nbsp;/&nbsp;Ackermann** | Nonholonomic; minimum turning radius | Cars, autonomous vehicles |
 | **Omnidirectional (mecanum, omni-wheel)** | Holonomic in the plane | Warehouse and mobile manipulation bases |
 
 #### 🦿 Floating-Base Systems
@@ -368,11 +368,11 @@ Representations determine HOW a configuration, pose, or motion is written down.
 |----------------|-----------|-----------|------------|
 | **📐 Denavit-Hartenberg Parameters** | Link geometry, four numbers per joint | Compact, standard in industry and datasheets | Several conflicting conventions; ill-conditioned for near-parallel axes |
 | **🌀 Screws / Product of Exponentials** | Link geometry as joint screw axes | No link frames needed, no parameter singularities, clean Jacobians | Less familiar; six numbers per joint |
-| **🧭 Euler Angles** | Orientation, three numbers | Minimal, human-readable | Gimbal lock; twelve conventions |
-| **🔢 Rotation Matrices** | Orientation, nine numbers | Unique, compose by multiplication | Redundant; must stay orthonormal |
-| **🎯 Unit Quaternions** | Orientation, four numbers | Singularity-free, cheap to interpolate | Double cover: $q$ and $-q$ are the same rotation |
-| **🔗 Dual Quaternions** | Full pose, eight numbers | Unified rotation and translation, good for blending | Two constraints to maintain; less tooling |
-| **🧮 Lie Groups SO(3) / SE(3)** | Orientation and pose as manifolds with tangent spaces | Principled errors, derivatives, and uncertainty | Requires manifold-aware optimization |
+| **🧭&nbsp;Euler&nbsp;Angles** | Orientation, three numbers | Minimal, human-readable | Gimbal lock; twelve conventions |
+| **🔢&nbsp;Rotation&nbsp;Matrices** | Orientation, nine numbers | Unique, compose by multiplication | Redundant; must stay orthonormal |
+| **🎯&nbsp;Unit&nbsp;Quaternions** | Orientation, four numbers | Singularity-free, cheap to interpolate | Double cover: $q$ and $-q$ are the same rotation |
+| **🔗&nbsp;Dual&nbsp;Quaternions** | Full pose, eight numbers | Unified rotation and translation, good for blending | Two constraints to maintain; less tooling |
+| **🧮&nbsp;Lie&nbsp;Groups&nbsp;SO(3)&nbsp;/&nbsp;SE(3)** | Orientation and pose as manifolds with tangent spaces | Principled errors, derivatives, and uncertainty | Requires manifold-aware optimization |
 
 #### 📐 Link-Frame Conventions
 
@@ -380,10 +380,10 @@ Representations determine HOW a configuration, pose, or motion is written down.
 
 | Convention | Idea | Note |
 |------------|------|------|
-| **Standard (distal) DH** | Frame attached at the far end of each link | The original 1955 formulation |
-| **Modified (proximal) DH** | Frame attached at the near end of each link | Popularized by Craig's textbook; easier for tree structures |
-| **Hayati modification** | Adds a rotation parameter for near-parallel axes | Removes the discontinuity that breaks calibration |
-| **URDF / SDF / MJCF** | Arbitrary fixed transform plus a joint axis per link | The de facto software formats; not minimal but unambiguous |
+| **Standard&nbsp;(distal)&nbsp;DH** | Frame attached at the far end of each link | The original 1955 formulation |
+| **Modified&nbsp;(proximal)&nbsp;DH** | Frame attached at the near end of each link | Popularized by Craig's textbook; easier for tree structures |
+| **Hayati&nbsp;modification** | Adds a rotation parameter for near-parallel axes | Removes the discontinuity that breaks calibration |
+| **URDF&nbsp;/&nbsp;SDF&nbsp;/&nbsp;MJCF** | Arbitrary fixed transform plus a joint axis per link | The de facto software formats; not minimal but unambiguous |
 
 #### 🌀 Screw Theory and the Product of Exponentials
 
@@ -401,20 +401,20 @@ The classic problems share one model and differ in what is known and what is ask
 
 | Problem | Given | Find | Typical Methods |
 |---------|-------|------|-----------------|
-| **Forward Kinematics (FK)** | Joint configuration | End-effector (or any link) pose | Chained homogeneous transforms, product of exponentials |
-| **Inverse Kinematics (IK)** | Desired end-effector pose | Joint configuration(s) | Closed-form solutions, Jacobian iteration, nonlinear optimization, learned samplers |
-| **Differential Kinematics** | Joint velocities (or desired twist) | End-effector twist (or joint velocities) | Jacobian, pseudoinverse, damped least squares, quadratic programming |
-| **Redundancy Resolution** | A task with spare degrees of freedom | The best of the infinitely many solutions | Null-space projection, task priority, hierarchical QP |
-| **Singularity Analysis** | The mechanism | Configurations where mobility is lost or gained | Jacobian rank, manipulability, geometric classification |
+| **Forward&nbsp;Kinematics&nbsp;(FK)** | Joint configuration | End-effector (or any link) pose | Chained homogeneous transforms, product of exponentials |
+| **Inverse&nbsp;Kinematics&nbsp;(IK)** | Desired end-effector pose | Joint configuration(s) | Closed-form solutions, Jacobian iteration, nonlinear optimization, learned samplers |
+| **Differential&nbsp;Kinematics** | Joint velocities (or desired twist) | End-effector twist (or joint velocities) | Jacobian, pseudoinverse, damped least squares, quadratic programming |
+| **Redundancy&nbsp;Resolution** | A task with spare degrees of freedom | The best of the infinitely many solutions | Null-space projection, task priority, hierarchical QP |
+| **Singularity&nbsp;Analysis** | The mechanism | Configurations where mobility is lost or gained | Jacobian rank, manipulability, geometric classification |
 | **Calibration** | Measured poses and joint readings | The true geometric parameters | Least-squares identification, hand-eye solvers |
-| **Workspace Analysis** | The mechanism and its limits | Reachable and dexterous regions | Sampling, capability maps, interval analysis |
+| **Workspace&nbsp;Analysis** | The mechanism and its limits | Reachable and dexterous regions | Sampling, capability maps, interval analysis |
 
 | IK Family | Idea | Trade-off |
 |-----------|------|-----------|
-| **Analytical (closed-form)** | Solve the equations symbolically or geometrically | Microsecond speed and all solutions; only for specific robot structures |
-| **Jacobian-based numerical** | Iterate along the linearized map | General and simple; local, sensitive to singularities and joint limits |
-| **Optimization-based** | Minimize a cost with constraints | Handles limits, collisions, and multiple goals; slower, depends on the seed |
-| **Sampling / evolutionary** | Search the configuration space globally | Escapes local minima; non-deterministic and slower |
+| **Analytical&nbsp;(closed&#8209;form)** | Solve the equations symbolically or geometrically | Microsecond speed and all solutions; only for specific robot structures |
+| **Jacobian&#8209;based&nbsp;numerical** | Iterate along the linearized map | General and simple; local, sensitive to singularities and joint limits |
+| **Optimization&#8209;based** | Minimize a cost with constraints | Handles limits, collisions, and multiple goals; slower, depends on the seed |
+| **Sampling&nbsp;/&nbsp;evolutionary** | Search the configuration space globally | Escapes local minima; non-deterministic and slower |
 | **Learned** | Train a model to propose solutions | Fast batched and diverse proposals; approximate, needs refinement and retraining per robot |
 
 ---
@@ -737,12 +737,12 @@ The taxonomy above describes how kinematics methods are *built*. This section cl
 | **🎮 Real-time teleoperation and servoing** | Smooth joint motion tracking a moving target | RelaxedIK, RangedIK, CollisionIK, NEO, damped least squares | Trade exact pose matching for continuity, singularity avoidance, and collision clearance |
 | **🧍 Whole-body IK for humanoids and legged robots** | Joint motion satisfying many tasks at once | Hierarchical QP, Stack of Tasks, Pink, mink, PlaCo, TSID | Weighted or strictly prioritized tasks with contact, balance, and limit constraints |
 | **🚀 Many IK queries for planning** | Thousands of collision-free solutions in parallel | cuRobo, PyRoki, IKFlow, pytorch_kinematics | Batched on GPU; learned samplers provide diverse seeds |
-| **🕺 Motion retargeting** | Robot motion matching a human or animated source | GMR, dex-retargeting (AnyTeleop), DexPilot, Skeleton-Aware Networks | Map between different skeletons while respecting the target's limits |
-| **🕸 Parallel robot kinematics** | Platform pose from leg lengths, and singularity maps | Husty's algorithm, Gosselin-Angeles classification, Merlet's interval methods | Forward kinematics has up to 40 solutions; singularities must be mapped in advance |
-| **🚗 Mobile base motion** | Feasible paths and velocity commands | Unicycle and bicycle models, Dubins and Reeds-Shepp curves, pure pursuit | Encode nonholonomic constraints directly in the model |
-| **🐍 Continuum robot shape** | Backbone shape from actuator inputs | Piecewise constant curvature, Cosserat rod models, modal approaches | Reduce an infinite-dimensional shape to a few parameters |
+| **🕺&nbsp;Motion&nbsp;retargeting** | Robot motion matching a human or animated source | GMR, dex-retargeting (AnyTeleop), DexPilot, Skeleton-Aware Networks | Map between different skeletons while respecting the target's limits |
+| **🕸&nbsp;Parallel&nbsp;robot&nbsp;kinematics** | Platform pose from leg lengths, and singularity maps | Husty's algorithm, Gosselin-Angeles classification, Merlet's interval methods | Forward kinematics has up to 40 solutions; singularities must be mapped in advance |
+| **🚗&nbsp;Mobile&nbsp;base&nbsp;motion** | Feasible paths and velocity commands | Unicycle and bicycle models, Dubins and Reeds-Shepp curves, pure pursuit | Encode nonholonomic constraints directly in the model |
+| **🐍&nbsp;Continuum&nbsp;robot&nbsp;shape** | Backbone shape from actuator inputs | Piecewise constant curvature, Cosserat rod models, modal approaches | Reduce an infinite-dimensional shape to a few parameters |
 | **🎯 Making the model match the robot** | Corrected geometric parameters and sensor mounting | POE-based calibration, Hayati parameters, Tsai-Lenz, Park-Martin, DREAM | Identify link parameters and hand-eye transforms from measurements |
-| **🌐 Robot placement and design** | Where the robot can reach, and how well | Capability maps, Reuleaux, manipulability and conditioning indices | Precompute reachability and dexterity over the workspace |
+| **🌐&nbsp;Robot&nbsp;placement&nbsp;and&nbsp;design** | Where the robot can reach, and how well | Capability maps, Reuleaux, manipulability and conditioning indices | Precompute reachability and dexterity over the workspace |
 
 ---
 
@@ -750,19 +750,19 @@ The taxonomy above describes how kinematics methods are *built*. This section cl
 
 | Strength | Methods That Stand Out | Typical Trade-off |
 |----------|------------------------|-------------------|
-| **⚡ Raw speed** | IKFast, EAIK, IK-Geo | Only for arms whose structure admits a closed form |
-| **📋 Returns all solutions** | IKFast, EAIK, IK-Geo, Raghavan-Roth, Husty-Pfurner | Redundant arms need a free parameter to be discretized |
+| **⚡&nbsp;Raw&nbsp;speed** | IKFast, EAIK, IK-Geo | Only for arms whose structure admits a closed form |
+| **📋&nbsp;Returns&nbsp;all&nbsp;solutions** | IKFast, EAIK, IK-Geo, Raghavan-Roth, Husty-Pfurner | Redundant arms need a free parameter to be discretized |
 | **🧩 Works on any robot description** | TRAC-IK, KDL, pick_ik, BioIK, Pink, mink | Local; quality depends on the initial guess |
-| **🚧 Respects joint limits** | TRAC-IK, SNS (saturation in the null space), QP-based IK, cuRobo | More computation per iteration than a plain pseudoinverse |
-| **🌀 Robust near singularities** | Damped least squares, selectively damped least squares, Levenberg-Marquardt, RelaxedIK | Accepts a small tracking error in exchange for bounded joint velocities |
+| **🚧&nbsp;Respects&nbsp;joint&nbsp;limits** | TRAC-IK, SNS (saturation in the null space), QP-based IK, cuRobo | More computation per iteration than a plain pseudoinverse |
+| **🌀&nbsp;Robust&nbsp;near&nbsp;singularities** | Damped least squares, selectively damped least squares, Levenberg-Marquardt, RelaxedIK | Accepts a small tracking error in exchange for bounded joint velocities |
 | **🎚 Many simultaneous objectives** | BioIK, RelaxedIK, RangedIK, hierarchical QP, PyRoki | Weights or priorities need tuning |
-| **📶 Strict task priorities** | Nakamura task priority, Siciliano-Slotine, Kanoun et al., hierarchical QP | Algorithmic singularities between conflicting tasks |
-| **🧱 Collision-aware solutions** | cuRobo, CollisionIK, NEO, Drake InverseKinematics | Needs geometry models and is more expensive |
+| **📶&nbsp;Strict&nbsp;task&nbsp;priorities** | Nakamura task priority, Siciliano-Slotine, Kanoun et al., hierarchical QP | Algorithmic singularities between conflicting tasks |
+| **🧱&nbsp;Collision&#8209;aware&nbsp;solutions** | cuRobo, CollisionIK, NEO, Drake InverseKinematics | Needs geometry models and is more expensive |
 | **🌍 Global search / certificates** | Global IK via mixed-integer convex optimization, distance-geometric IK, BioIK | Much slower than local methods |
-| **🚀 Large batches** | cuRobo, PyRoki, pytorch_kinematics, IKFlow | Requires a GPU for the full benefit |
+| **🚀&nbsp;Large&nbsp;batches** | cuRobo, PyRoki, pytorch_kinematics, IKFlow | Requires a GPU for the full benefit |
 | **🎲 Diverse solutions for redundant arms** | IKFlow, generative graphical IK, invertible neural networks | Approximate; usually polished with a numerical step |
 | **📐 Calibration-friendly models** | Product of exponentials, Hayati parameters, complete and parametrically continuous (CPC) model | More parameters than the minimal DH set |
-| **🧠 No analytic model needed** | Neural Jacobian Fields, visual self-modeling, locally weighted learning | Accuracy below a calibrated analytic model |
+| **🧠&nbsp;No&nbsp;analytic&nbsp;model&nbsp;needed** | Neural Jacobian Fields, visual self-modeling, locally weighted learning | Accuracy below a calibrated analytic model |
 
 ---
 
@@ -775,14 +775,14 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 | **IKFast** | Analytical (generated code) | Arms with solvable structure, up to 6 solved joints | All solutions | Filtered afterward | CPU | Microsecond closed-form IK from a robot description |
 | **EAIK** | Analytical (subproblem decomposition) | 6R arms with decomposable geometry | All solutions | Filtered afterward | CPU | Automatic derivation with numerically stable subproblems |
 | **KDL** | Jacobian pseudoinverse iteration | Any serial chain | One solution | Clamping | CPU | Simple, ubiquitous ROS baseline |
-| **TRAC-IK** | Newton iteration with restarts, run alongside SQP | Any serial chain | One solution | ✅ | CPU | Higher success rate than KDL under joint limits |
+| **TRAC&#8209;IK** | Newton iteration with restarts, run alongside SQP | Any serial chain | One solution | ✅ | CPU | Higher success rate than KDL under joint limits |
 | **BioIK** | Memetic evolutionary optimization | Any tree, multiple end-effectors | One solution | ✅ | CPU | Arbitrary combinable goals, global search |
 | **RelaxedIK** | Weighted nonlinear optimization | Serial arms | One solution per time step | ✅ | CPU | Smooth, feasible motion for real-time tracking |
 | **pick_ik** | Gradient descent plus memetic global search | Any MoveIt robot | One solution | ✅ | CPU | Modern MoveIt 2 plugin with custom cost functions |
 | **Pink** | Differential IK as a weighted QP | Any Pinocchio model, floating base | Joint velocities | ✅ | CPU | Whole-body task formulation for humanoids |
 | **mink** | Differential IK as a weighted QP | Any MuJoCo model, floating base | Joint velocities | ✅ | CPU | Same idea natively on MuJoCo, with collision avoidance |
-| **Hierarchical QP** | Cascade of quadratic programs | Humanoids, redundant systems | Joint velocities or accelerations | ✅ | CPU | Strict priorities with inequality constraints |
-| **Drake Global IK** | Mixed-integer convex optimization | Arms and trees | One solution or an infeasibility certificate | ✅ | CPU, MIP solver | Can prove that no solution exists |
+| **Hierarchical&nbsp;QP** | Cascade of quadratic programs | Humanoids, redundant systems | Joint velocities or accelerations | ✅ | CPU | Strict priorities with inequality constraints |
+| **Drake&nbsp;Global&nbsp;IK** | Mixed-integer convex optimization | Arms and trees | One solution or an infeasibility certificate | ✅ | CPU, MIP solver | Can prove that no solution exists |
 | **cuRobo** | Batched parallel optimization | Arms, with world collision | Many solutions | ✅ | GPU | Collision-free IK at very high throughput |
 | **PyRoki** | Modular nonlinear least squares in JAX | Any URDF | One or batched solutions | ✅ | CPU / GPU | One toolkit for IK, retargeting, and trajectory optimization |
 | **IKFlow** | Conditional normalizing flow | Arms, trained per robot | Many diverse solutions | Learned from data | GPU | Samples the solution set of redundant arms |
@@ -1144,16 +1144,16 @@ Kinematics has no single leaderboard comparable to those in perception. Evaluati
 
 | Metric | Measures | Used For |
 |--------|----------|----------|
-| **Position Error** | Distance between achieved and target end-effector position | IK accuracy |
-| **Orientation Error** | Geodesic angle between achieved and target orientation | IK accuracy |
-| **Success (Solve) Rate** | Fraction of random reachable targets solved within tolerance and limits | Solver reliability |
-| **Solve Time** | Time per query, or queries per second for batched solvers | Real-time suitability |
-| **Solution Count / Diversity** | Number of distinct solutions; coverage of the self-motion manifold | Analytical and generative IK |
+| **Position&nbsp;Error** | Distance between achieved and target end-effector position | IK accuracy |
+| **Orientation&nbsp;Error** | Geodesic angle between achieved and target orientation | IK accuracy |
+| **Success&nbsp;(Solve)&nbsp;Rate** | Fraction of random reachable targets solved within tolerance and limits | Solver reliability |
+| **Solve&nbsp;Time** | Time per query, or queries per second for batched solvers | Real-time suitability |
+| **Solution&nbsp;Count&nbsp;/&nbsp;Diversity** | Number of distinct solutions; coverage of the self-motion manifold | Analytical and generative IK |
 | **Manipulability / Condition Number** | Distance from singularity and isotropy of the Jacobian | Dexterity, design, redundancy resolution |
-| **Joint-Limit Margin** | Distance of the solution from joint limits | Solution quality |
-| **Joint Velocity / Jerk** | Smoothness of consecutive solutions | Teleoperation and tracking |
+| **Joint&#8209;Limit&nbsp;Margin** | Distance of the solution from joint limits | Solution quality |
+| **Joint&nbsp;Velocity&nbsp;/&nbsp;Jerk** | Smoothness of consecutive solutions | Teleoperation and tracking |
 | **Pose Accuracy / Repeatability** | Deviation from commanded pose, and spread over repeated visits (ISO 9283) | Calibration and hardware qualification |
-| **Residual After Calibration** | Remaining error on held-out measurement poses | Calibration quality |
+| **Residual&nbsp;After&nbsp;Calibration** | Remaining error on held-out measurement poses | Calibration quality |
 
 ---
 
@@ -1214,17 +1214,17 @@ Kinematics has no single leaderboard comparable to those in perception. Evaluati
 
 | Domain | Role of Kinematics | Typical Stack |
 |--------|--------------------|---------------|
-| **🏭 Industrial Automation** | Cartesian motion, tool-frame programming, offline programming | Closed-form IK, calibrated DH models, ISO 9283 testing |
+| **🏭&nbsp;Industrial&nbsp;Automation** | Cartesian motion, tool-frame programming, offline programming | Closed-form IK, calibrated DH models, ISO 9283 testing |
 | **🤝 Collaborative & Service Manipulation** | Reaching and grasping in clutter with 7-DOF arms | Numerical or GPU IK, redundancy resolution, collision-aware solvers |
-| **🧍 Humanoids** | Whole-body reaching, balance, and imitation of human motion | Differential IK with QP, motion retargeting, centroidal models |
-| **🦿 Legged Locomotion** | Foot placement and base state estimation | Leg IK, kinematic odometry fused with an IMU |
-| **🚗 Autonomous Driving** | Path feasibility and tracking | Kinematic bicycle model, Dubins and Reeds-Shepp paths |
-| **🚜 Mobile Manipulation** | Coordinating a base and an arm | Unified base-arm kinematics, reachability maps for base placement |
-| **🩺 Surgical Robotics** | Motion through a fixed entry point; flexible instruments | Remote-center-of-motion constraints, continuum kinematics |
-| **🎮 Teleoperation & VR** | Mapping an operator's motion to a robot in real time | Smooth optimization-based IK, hand retargeting |
-| **🎬 Animation & Digital Humans** | Posing characters and transferring motion | CCD, FABRIK, full-body IK, learned retargeting |
+| **🧍&nbsp;Humanoids** | Whole-body reaching, balance, and imitation of human motion | Differential IK with QP, motion retargeting, centroidal models |
+| **🦿&nbsp;Legged&nbsp;Locomotion** | Foot placement and base state estimation | Leg IK, kinematic odometry fused with an IMU |
+| **🚗&nbsp;Autonomous&nbsp;Driving** | Path feasibility and tracking | Kinematic bicycle model, Dubins and Reeds-Shepp paths |
+| **🚜&nbsp;Mobile&nbsp;Manipulation** | Coordinating a base and an arm | Unified base-arm kinematics, reachability maps for base placement |
+| **🩺&nbsp;Surgical&nbsp;Robotics** | Motion through a fixed entry point; flexible instruments | Remote-center-of-motion constraints, continuum kinematics |
+| **🎮&nbsp;Teleoperation&nbsp;&&nbsp;VR** | Mapping an operator's motion to a robot in real time | Smooth optimization-based IK, hand retargeting |
+| **🎬&nbsp;Animation&nbsp;&&nbsp;Digital&nbsp;Humans** | Posing characters and transferring motion | CCD, FABRIK, full-body IK, learned retargeting |
 | **✈ Simulators & Precision Machines** | High-stiffness six-axis motion | Parallel kinematics, singularity-free workspace design |
-| **📏 Metrology & Machining** | Reaching absolute accuracy targets | Geometric and non-geometric calibration |
+| **📏&nbsp;Metrology&nbsp;&&nbsp;Machining** | Reaching absolute accuracy targets | Geometric and non-geometric calibration |
 
 ---
 
@@ -1234,14 +1234,14 @@ Kinematics has no single leaderboard comparable to those in perception. Evaluati
 |-----------|---------------|
 | **Kinematics inside learned policies** | When should a policy output end-effector targets solved by IK, and when should it output joint commands directly? |
 | **Cross-embodiment generalization** | Can one model produce IK or retargeted motion for robots it was never trained on, given only a description? |
-| **Learned IK with guarantees** | How can generative solvers reach the precision and completeness of analytical ones, or certify what they miss? |
-| **Retargeting at scale** | How should human motion be mapped to humanoids so that the result is physically trackable and not merely kinematically similar? |
-| **Kinematics from perception** | Can a robot's kinematic model be recovered and kept calibrated from cameras alone? |
-| **Soft and continuum robots** | What is the right low-dimensional kinematic description for robots whose shape depends on load and contact? |
+| **Learned&nbsp;IK&nbsp;with&nbsp;guarantees** | How can generative solvers reach the precision and completeness of analytical ones, or certify what they miss? |
+| **Retargeting&nbsp;at&nbsp;scale** | How should human motion be mapped to humanoids so that the result is physically trackable and not merely kinematically similar? |
+| **Kinematics&nbsp;from&nbsp;perception** | Can a robot's kinematic model be recovered and kept calibrated from cameras alone? |
+| **Soft&nbsp;and&nbsp;continuum&nbsp;robots** | What is the right low-dimensional kinematic description for robots whose shape depends on load and contact? |
 | **Contact-rich, closed-chain tasks** | How should solvers handle the changing closed loops created by bimanual manipulation and multi-contact locomotion? |
-| **Global and certifiable IK** | Can infeasibility certificates and global optima be computed at interactive rates? |
-| **Co-design** | How can kinematic structure be optimized jointly with control for a task? |
-| **Unified toolchains** | Can one differentiable, batched kinematics stack serve planning, control, calibration, and learning? |
+| **Global&nbsp;and&nbsp;certifiable&nbsp;IK** | Can infeasibility certificates and global optima be computed at interactive rates? |
+| **Co&#8209;design** | How can kinematic structure be optimized jointly with control for a task? |
+| **Unified&nbsp;toolchains** | Can one differentiable, batched kinematics stack serve planning, control, calibration, and learning? |
 
 ---
 
