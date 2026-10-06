@@ -147,10 +147,10 @@ T_n^0(q) = A_1(q_1) \, A_2(q_2) \cdots A_n(q_n)
 
 | Parameter | Symbol | Meaning | Joint variable when |
 |-----------|--------|---------|---------------------|
-| Joint angle | $\theta_i$ | Rotation about $z_{i-1}$ | The joint is revolute |
-| Link offset | $d_i$ | Translation along $z_{i-1}$ | The joint is prismatic |
-| Link length | $a_i$ | Translation along $x_i$ | Never (fixed by the design) |
-| Link twist | $\alpha_i$ | Rotation about $x_i$ | Never (fixed by the design) |
+| Joint&nbsp;angle | $\theta_i$ | Rotation about $z_{i-1}$ | The joint is revolute |
+| Link&nbsp;offset | $d_i$ | Translation along $z_{i-1}$ | The joint is prismatic |
+| Link&nbsp;length | $a_i$ | Translation along $x_i$ | Never (fixed by the design) |
+| Link&nbsp;twist | $\alpha_i$ | Rotation about $x_i$ | Never (fixed by the design) |
 
 In the standard (distal) convention these four motions are applied in the order $\mathrm{Rot}_z(\theta_i)$, $\mathrm{Trans}_z(d_i)$, $\mathrm{Trans}_x(a_i)$, $\mathrm{Rot}_x(\alpha_i)$, which multiplies out to
 
@@ -201,10 +201,10 @@ for $q$. The equations are nonlinear in the joint angles, so three things that a
 
 | Situation | Number of Solutions | Example |
 |-----------|---------------------|---------|
-| Target outside the workspace | None | A point farther than the arm can reach |
-| Non-redundant arm ($n = m$) | Finite | 2 for a planar 2R arm; up to 8 for a 6R arm with a spherical wrist; up to 16 for a general 6R arm |
-| Redundant arm ($n > m$) | Infinitely many | A 7-joint arm can move its elbow while the hand stays fixed |
-| At a singularity | Solutions merge or become infinite | A planar 2R arm stretched straight |
+| Target&nbsp;outside&nbsp;the&nbsp;workspace | None | A point farther than the arm can reach |
+| Non&#8209;redundant&nbsp;arm&nbsp;(*n*&nbsp;=&nbsp;*m*) | Finite | 2 for a planar 2R arm; up to 8 for a 6R arm with a spherical wrist; up to 16 for a general 6R arm |
+| Redundant&nbsp;arm&nbsp;(*n*&nbsp;>&nbsp;*m*) | Infinitely many | A 7-joint arm can move its elbow while the hand stays fixed |
+| At&nbsp;a&nbsp;singularity | Solutions merge or become infinite | A planar 2R arm stretched straight |
 
 **Closed-form solution.** When the geometry allows it, the equations are solved by algebra or trigonometry. For the planar 2R arm, squaring and adding the two position equations eliminates $\theta_1$:
 
@@ -346,7 +346,7 @@ The mechanism determines WHAT the kinematic map looks like.
 
 | Model | Constraint | Typical Platform |
 |-------|------------|------------------|
-| **Differential drive / unicycle** | Nonholonomic; can turn in place | Indoor service and research robots |
+| **Differential&nbsp;drive&nbsp;/&nbsp;unicycle** | Nonholonomic; can turn in place | Indoor service and research robots |
 | **Bicycle&nbsp;/&nbsp;Ackermann** | Nonholonomic; minimum turning radius | Cars, autonomous vehicles |
 | **Omnidirectional (mecanum, omni-wheel)** | Holonomic in the plane | Warehouse and mobile manipulation bases |
 
@@ -409,7 +409,7 @@ The classic problems share one model and differ in what is known and what is ask
 | **Calibration** | Measured poses and joint readings | The true geometric parameters | Least-squares identification, hand-eye solvers |
 | **Workspace&nbsp;Analysis** | The mechanism and its limits | Reachable and dexterous regions | Sampling, capability maps, interval analysis |
 
-| IK Family | Idea | Trade-off |
+| IK&nbsp;Family | Idea | Trade-off |
 |-----------|------|-----------|
 | **Analytical&nbsp;(closed&#8209;form)** | Solve the equations symbolically or geometrically | Microsecond speed and all solutions; only for specific robot structures |
 | **Jacobian&#8209;based&nbsp;numerical** | Iterate along the linearized map | General and simple; local, sensitive to singularities and joint limits |
@@ -548,8 +548,8 @@ c_1 + 0.8\,c_{12} = 1.2, \qquad s_1 + 0.8\,s_{12} = 0.9
 
 | Solution | $\theta_1$ | $\theta_2$ |
 |----------|-----------|-----------|
-| Elbow down | $7.3^\circ$ | $67.6^\circ$ |
-| Elbow up | $66.4^\circ$ | $-67.6^\circ$ |
+| Elbow&nbsp;down | $7.3^\circ$ | $67.6^\circ$ |
+| Elbow&nbsp;up | $66.4^\circ$ | $-67.6^\circ$ |
 
 ---
 
@@ -731,17 +731,17 @@ The taxonomy above describes how kinematics methods are *built*. This section cl
 
 | Task | Output You Need | Representative Methods | Why These |
 |------|-----------------|------------------------|-----------|
-| **🏭 Fast IK for a standard 6-DOF arm** | Every joint solution in microseconds | IKFast, EAIK, IK-Geo, Pieper-style closed forms | Closed-form solvers return all branches deterministically, which planners need |
-| **🦾 IK for a 7-DOF redundant arm** | One good solution, or the whole self-motion | Shimizu et al. (S-R-S arms), Franka analytical IK, TRAC-IK, cuRobo | Analytical solvers parameterize redundancy by an arm angle; numerical solvers handle arbitrary limits |
-| **🔧 General-purpose IK for any URDF** | A reliable solution with joint limits respected | TRAC-IK, KDL, pick_ik, BioIK, Levenberg-Marquardt (Sugihara) | Need only a robot description; mature MoveIt and ROS integration |
-| **🎮 Real-time teleoperation and servoing** | Smooth joint motion tracking a moving target | RelaxedIK, RangedIK, CollisionIK, NEO, damped least squares | Trade exact pose matching for continuity, singularity avoidance, and collision clearance |
-| **🧍 Whole-body IK for humanoids and legged robots** | Joint motion satisfying many tasks at once | Hierarchical QP, Stack of Tasks, Pink, mink, PlaCo, TSID | Weighted or strictly prioritized tasks with contact, balance, and limit constraints |
-| **🚀 Many IK queries for planning** | Thousands of collision-free solutions in parallel | cuRobo, PyRoki, IKFlow, pytorch_kinematics | Batched on GPU; learned samplers provide diverse seeds |
+| **🏭&nbsp;Fast&nbsp;IK&nbsp;for&nbsp;a&nbsp;6&#8209;DOF&nbsp;arm** | Every joint solution in microseconds | IKFast, EAIK, IK-Geo, Pieper-style closed forms | Closed-form solvers return all branches deterministically, which planners need |
+| **🦾&nbsp;IK&nbsp;for&nbsp;a&nbsp;7&#8209;DOF&nbsp;redundant&nbsp;arm** | One good solution, or the whole self-motion | Shimizu et al. (S-R-S arms), Franka analytical IK, TRAC-IK, cuRobo | Analytical solvers parameterize redundancy by an arm angle; numerical solvers handle arbitrary limits |
+| **🔧&nbsp;General&#8209;purpose&nbsp;IK** | A reliable solution with joint limits respected | TRAC-IK, KDL, pick_ik, BioIK, Levenberg-Marquardt (Sugihara) | Need only a robot description; mature MoveIt and ROS integration |
+| **🎮&nbsp;Teleoperation&nbsp;and&nbsp;servoing** | Smooth joint motion tracking a moving target | RelaxedIK, RangedIK, CollisionIK, NEO, damped least squares | Trade exact pose matching for continuity, singularity avoidance, and collision clearance |
+| **🧍&nbsp;Whole&#8209;body&nbsp;IK** | Joint motion satisfying many tasks at once | Hierarchical QP, Stack of Tasks, Pink, mink, PlaCo, TSID | Weighted or strictly prioritized tasks with contact, balance, and limit constraints |
+| **🚀&nbsp;Many&nbsp;IK&nbsp;queries&nbsp;for&nbsp;planning** | Thousands of collision-free solutions in parallel | cuRobo, PyRoki, IKFlow, pytorch_kinematics | Batched on GPU; learned samplers provide diverse seeds |
 | **🕺&nbsp;Motion&nbsp;retargeting** | Robot motion matching a human or animated source | GMR, dex-retargeting (AnyTeleop), DexPilot, Skeleton-Aware Networks | Map between different skeletons while respecting the target's limits |
 | **🕸&nbsp;Parallel&nbsp;robot&nbsp;kinematics** | Platform pose from leg lengths, and singularity maps | Husty's algorithm, Gosselin-Angeles classification, Merlet's interval methods | Forward kinematics has up to 40 solutions; singularities must be mapped in advance |
 | **🚗&nbsp;Mobile&nbsp;base&nbsp;motion** | Feasible paths and velocity commands | Unicycle and bicycle models, Dubins and Reeds-Shepp curves, pure pursuit | Encode nonholonomic constraints directly in the model |
 | **🐍&nbsp;Continuum&nbsp;robot&nbsp;shape** | Backbone shape from actuator inputs | Piecewise constant curvature, Cosserat rod models, modal approaches | Reduce an infinite-dimensional shape to a few parameters |
-| **🎯 Making the model match the robot** | Corrected geometric parameters and sensor mounting | POE-based calibration, Hayati parameters, Tsai-Lenz, Park-Martin, DREAM | Identify link parameters and hand-eye transforms from measurements |
+| **🎯&nbsp;Model&nbsp;calibration** | Corrected geometric parameters and sensor mounting | POE-based calibration, Hayati parameters, Tsai-Lenz, Park-Martin, DREAM | Identify link parameters and hand-eye transforms from measurements |
 | **🌐&nbsp;Robot&nbsp;placement&nbsp;and&nbsp;design** | Where the robot can reach, and how well | Capability maps, Reuleaux, manipulability and conditioning indices | Precompute reachability and dexterity over the workspace |
 
 ---
@@ -752,16 +752,16 @@ The taxonomy above describes how kinematics methods are *built*. This section cl
 |----------|------------------------|-------------------|
 | **⚡&nbsp;Raw&nbsp;speed** | IKFast, EAIK, IK-Geo | Only for arms whose structure admits a closed form |
 | **📋&nbsp;Returns&nbsp;all&nbsp;solutions** | IKFast, EAIK, IK-Geo, Raghavan-Roth, Husty-Pfurner | Redundant arms need a free parameter to be discretized |
-| **🧩 Works on any robot description** | TRAC-IK, KDL, pick_ik, BioIK, Pink, mink | Local; quality depends on the initial guess |
+| **🧩&nbsp;Works&nbsp;on&nbsp;any&nbsp;robot** | TRAC-IK, KDL, pick_ik, BioIK, Pink, mink | Local; quality depends on the initial guess |
 | **🚧&nbsp;Respects&nbsp;joint&nbsp;limits** | TRAC-IK, SNS (saturation in the null space), QP-based IK, cuRobo | More computation per iteration than a plain pseudoinverse |
 | **🌀&nbsp;Robust&nbsp;near&nbsp;singularities** | Damped least squares, selectively damped least squares, Levenberg-Marquardt, RelaxedIK | Accepts a small tracking error in exchange for bounded joint velocities |
-| **🎚 Many simultaneous objectives** | BioIK, RelaxedIK, RangedIK, hierarchical QP, PyRoki | Weights or priorities need tuning |
+| **🎚&nbsp;Many&nbsp;simultaneous&nbsp;objectives** | BioIK, RelaxedIK, RangedIK, hierarchical QP, PyRoki | Weights or priorities need tuning |
 | **📶&nbsp;Strict&nbsp;task&nbsp;priorities** | Nakamura task priority, Siciliano-Slotine, Kanoun et al., hierarchical QP | Algorithmic singularities between conflicting tasks |
 | **🧱&nbsp;Collision&#8209;aware&nbsp;solutions** | cuRobo, CollisionIK, NEO, Drake InverseKinematics | Needs geometry models and is more expensive |
-| **🌍 Global search / certificates** | Global IK via mixed-integer convex optimization, distance-geometric IK, BioIK | Much slower than local methods |
+| **🌍&nbsp;Global&nbsp;search&nbsp;/&nbsp;certificates** | Global IK via mixed-integer convex optimization, distance-geometric IK, BioIK | Much slower than local methods |
 | **🚀&nbsp;Large&nbsp;batches** | cuRobo, PyRoki, pytorch_kinematics, IKFlow | Requires a GPU for the full benefit |
-| **🎲 Diverse solutions for redundant arms** | IKFlow, generative graphical IK, invertible neural networks | Approximate; usually polished with a numerical step |
-| **📐 Calibration-friendly models** | Product of exponentials, Hayati parameters, complete and parametrically continuous (CPC) model | More parameters than the minimal DH set |
+| **🎲&nbsp;Diverse&nbsp;solutions** | IKFlow, generative graphical IK, invertible neural networks | Approximate; usually polished with a numerical step |
+| **📐&nbsp;Calibration&#8209;friendly&nbsp;models** | Product of exponentials, Hayati parameters, complete and parametrically continuous (CPC) model | More parameters than the minimal DH set |
 | **🧠&nbsp;No&nbsp;analytic&nbsp;model&nbsp;needed** | Neural Jacobian Fields, visual self-modeling, locally weighted learning | Accuracy below a calibrated analytic model |
 
 ---
@@ -801,10 +801,10 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 
 | Paper | Year | Description | Links |
 |-------|------|-------------|-------|
-| Denavit-Hartenberg Notation | 1955 | Introduces the four-parameter matrix notation for lower-pair mechanisms that became the standard way to describe serial robot geometry. | [[JAM]](https://doi.org/10.1115/1.4011045) |
-| Pieper's Thesis | 1968 | Shows that a 6-DOF arm with three consecutive intersecting axes has a closed-form inverse kinematic solution, the design rule behind most industrial arms. | [[Thesis]](https://apps.dtic.mil/sti/citations/AD0680036) |
-| Product of Exponentials | 1984 | Writes forward kinematics as a product of matrix exponentials of joint twists, removing the need for link frames. | [[Springer]](https://doi.org/10.1007/BFb0031048) |
-| Khalil-Kleinfinger Notation | 1986 | A modified geometric notation that handles open, tree-structured, and closed-loop robots with one consistent set of parameters. | [[ICRA]](https://doi.org/10.1109/ROBOT.1986.1087552) |
+| Denavit&#8209;Hartenberg&nbsp;Notation | 1955 | Introduces the four-parameter matrix notation for lower-pair mechanisms that became the standard way to describe serial robot geometry. | [[JAM]](https://doi.org/10.1115/1.4011045) |
+| Pieper's&nbsp;Thesis | 1968 | Shows that a 6-DOF arm with three consecutive intersecting axes has a closed-form inverse kinematic solution, the design rule behind most industrial arms. | [[Thesis]](https://apps.dtic.mil/sti/citations/AD0680036) |
+| Product&nbsp;of&nbsp;Exponentials | 1984 | Writes forward kinematics as a product of matrix exponentials of joint twists, removing the need for link frames. | [[Springer]](https://doi.org/10.1007/BFb0031048) |
+| Khalil&#8209;Kleinfinger&nbsp;Notation | 1986 | A modified geometric notation that handles open, tree-structured, and closed-loop robots with one consistent set of parameters. | [[ICRA]](https://doi.org/10.1109/ROBOT.1986.1087552) |
 | Computational Aspects of the POE Formula | 1994 | Analyzes the product-of-exponentials formula for efficient forward kinematics and Jacobian computation and compares it with Denavit-Hartenberg models. | [[TAC]](https://doi.org/10.1109/9.280779) |
 
 ---
@@ -855,7 +855,7 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 |-------|------|-------------|-------|
 | IKFast | 2010 | Analyzes a robot's kinematic equations symbolically and generates C++ code that returns all solutions; introduced with OpenRAVE. | [[Thesis]](https://www.ri.cmu.edu/publications/automated-construction-of-robotic-manipulation-programs/) [[GitHub]](https://github.com/rdiankov/openrave) |
 | IKBT | 2017 | Uses a behavior tree to automate symbolic closed-form IK derivation for arms up to 6 DOF, producing a LaTeX report and solver code. | [[arXiv]](https://arxiv.org/abs/1711.05412) [[GitHub]](https://github.com/uw-biorobotics/IKBT) |
-| IK-Geo | 2022 | Unifies IK for 6R arms through canonical geometric subproblems: closed-form when three axes intersect or are parallel, and by a low-dimensional search otherwise. | [[arXiv]](https://arxiv.org/abs/2211.05737) [[GitHub]](https://github.com/rpiRobotics/ik-geo) |
+| IK&#8209;Geo | 2022 | Unifies IK for 6R arms through canonical geometric subproblems: closed-form when three axes intersect or are parallel, and by a low-dimensional search otherwise. | [[arXiv]](https://arxiv.org/abs/2211.05737) [[GitHub]](https://github.com/rpiRobotics/ik-geo) |
 | EAIK | 2024 | Automatically decomposes a manipulator's geometry into subproblems to derive analytical IK directly from a URDF or DH table. | [[arXiv]](https://arxiv.org/abs/2409.14815) [[GitHub]](https://github.com/OstermD/EAIK) |
 
 #### 🔁 Numerical & Optimization-based Inverse Kinematics
@@ -870,19 +870,19 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 
 | Paper | Year | Description | Links |
 |-------|------|-------------|-------|
-| Resolved Motion Rate Control | 1969 | Introduces Jacobian-based coordinated control: commanding end-effector velocity and solving for joint rates. | [[TMMS]](https://doi.org/10.1109/TMMS.1969.299896) |
-| Damped Least Squares (Wampler) | 1986 | Adds damping to the pseudoinverse so that joint velocities stay bounded near singularities. | [[SMC]](https://doi.org/10.1109/TSMC.1986.289285) |
-| Singularity-Robust Inverse | 1986 | Independently proposes the damped pseudoinverse and analyzes the trade-off between tracking accuracy and feasibility. | [[JDSMC]](https://doi.org/10.1115/1.3143764) |
-| Cyclic Coordinate Descent | 1991 | Combines per-joint coordinate descent with a quasi-Newton refinement for fast, derivative-light IK. | [[TRA]](https://doi.org/10.1109/70.86079) |
+| Resolved&nbsp;Motion&nbsp;Rate&nbsp;Control | 1969 | Introduces Jacobian-based coordinated control: commanding end-effector velocity and solving for joint rates. | [[TMMS]](https://doi.org/10.1109/TMMS.1969.299896) |
+| Damped&nbsp;Least&nbsp;Squares&nbsp;(Wampler) | 1986 | Adds damping to the pseudoinverse so that joint velocities stay bounded near singularities. | [[SMC]](https://doi.org/10.1109/TSMC.1986.289285) |
+| Singularity&#8209;Robust&nbsp;Inverse | 1986 | Independently proposes the damped pseudoinverse and analyzes the trade-off between tracking accuracy and feasibility. | [[JDSMC]](https://doi.org/10.1115/1.3143764) |
+| Cyclic&nbsp;Coordinate&nbsp;Descent | 1991 | Combines per-joint coordinate descent with a quasi-Newton refinement for fast, derivative-light IK. | [[TRA]](https://doi.org/10.1109/70.86079) |
 | Selectively Damped Least Squares | 2005 | Damps each singular direction separately according to how hard it is to reach the target, improving convergence over uniform damping. | [[JGT]](https://doi.org/10.1080/2151237X.2005.10129202) |
 | FABRIK | 2011 | Forward and backward reaching IK that works on joint positions along lines instead of rotation angles; popular in animation. | [[GM]](https://doi.org/10.1016/j.gmod.2011.05.003) |
-| Solvability-Unconcerned IK | 2011 | Levenberg-Marquardt IK with a robust damping rule that converges whether or not the target is reachable. | [[T-RO]](https://doi.org/10.1109/TRO.2011.2148230) |
+| Solvability&#8209;Unconcerned&nbsp;IK | 2011 | Levenberg-Marquardt IK with a robust damping rule that converges whether or not the target is reachable. | [[T-RO]](https://doi.org/10.1109/TRO.2011.2148230) |
 
 ##### 🎚 **Optimization-based & Multi-Objective IK**
 
 | Paper | Year | Description | Links |
 |-------|------|-------------|-------|
-| TRAC-IK | 2015 | Runs a Newton solver with random restarts concurrently with sequential quadratic programming, substantially raising solve rates under joint limits. | [[Humanoids]](https://doi.org/10.1109/HUMANOIDS.2015.7363472) [[Bitbucket]](https://bitbucket.org/traclabs/trac_ik) |
+| TRAC&#8209;IK | 2015 | Runs a Newton solver with random restarts concurrently with sequential quadratic programming, substantially raising solve rates under joint limits. | [[Humanoids]](https://doi.org/10.1109/HUMANOIDS.2015.7363472) [[Bitbucket]](https://bitbucket.org/traclabs/trac_ik) |
 | RelaxedIK | 2018 | Treats pose matching as one weighted objective among several, yielding smooth motion free of self-collisions and singularities. | [[RSS]](https://doi.org/10.15607/RSS.2018.XIV.043) [[GitHub]](https://github.com/uwgraphics/relaxed_ik) |
 | BioIK | 2019 | Memetic algorithm combining evolutionary and particle swarm search with gradient steps for full-body IK with arbitrary goal types. | [[TEVC]](https://doi.org/10.1109/TEVC.2018.2867601) [[GitHub]](https://github.com/TAMS-Group/bio_ik) |
 | Global IK via Mixed-Integer Convex Optimization | 2019 | Relaxes the rotation constraints into a mixed-integer convex program that finds a solution or certifies infeasibility. | [[IJRR]](https://doi.org/10.1177/0278364919846512) |
@@ -898,11 +898,11 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 
 | Paper | Year | Description | Links |
 |-------|------|-------------|-------|
-| Learning Inverse Kinematics | 2001 | Learns IK for a redundant humanoid arm locally at the velocity level with locally weighted regression, sidestepping the non-convexity of the solution set. | [[IROS]](https://doi.org/10.1109/IROS.2001.973374) |
+| Learning&nbsp;Inverse&nbsp;Kinematics | 2001 | Learns IK for a redundant humanoid arm locally at the velocity level with locally weighted regression, sidestepping the non-convexity of the solution set. | [[IROS]](https://doi.org/10.1109/IROS.2001.973374) |
 | Analyzing Inverse Problems with Invertible Neural Networks | 2018 | Introduces invertible networks for ambiguous inverse problems and uses planar-arm inverse kinematics as a test case. | [[arXiv]](https://arxiv.org/abs/1808.04730) |
 | Learning Constrained Distributions of Robot Configurations | 2021 | Trains a generative adversarial network to sample configurations satisfying kinematic constraints, used to seed IK and planning. | [[arXiv]](https://arxiv.org/abs/2011.05717) |
 | IKFlow | 2022 | Conditional normalizing flow that generates diverse solutions covering the full self-motion manifold of redundant arms. | [[arXiv]](https://arxiv.org/abs/2111.08933) [[GitHub]](https://github.com/jstmn/ikflow) |
-| Neural Inverse Kinematics | 2022 | Hierarchical hypernetwork that models the conditional distribution of each joint given the previous ones along the chain. | [[arXiv]](https://arxiv.org/abs/2205.10837) |
+| Neural&nbsp;Inverse&nbsp;Kinematics | 2022 | Hierarchical hypernetwork that models the conditional distribution of each joint given the previous ones along the chain. | [[arXiv]](https://arxiv.org/abs/2205.10837) |
 | Generative Graphical Inverse Kinematics | 2022 | Graph neural network that generates IK solutions in a distance-geometric representation and generalizes across different manipulators. | [[arXiv]](https://arxiv.org/abs/2209.08812) |
 | CycleIK | 2023 | Neuro-inspired IK using a GAN and an MLP that can be combined with SLSQP or genetic optimization, evaluated on the NICOL semi-humanoid robot. | [[arXiv]](https://arxiv.org/abs/2307.11554) |
 
@@ -935,13 +935,13 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 | Paper | Year | Description | Links |
 |-------|------|-------------|-------|
 | Automatic Supervisory Control of Multibody Mechanisms | 1977 | Introduces null-space projection of a secondary objective gradient, the basis of redundancy resolution. | [[SMC]](https://doi.org/10.1109/TSMC.1977.4309644) |
-| Operational Space Formulation | 1987 | Unified framework for motion and force control in task space, including the dynamically consistent treatment of redundancy. | [[JRA]](https://doi.org/10.1109/JRA.1987.1087068) |
+| Operational&nbsp;Space&nbsp;Formulation | 1987 | Unified framework for motion and force control in task space, including the dynamically consistent treatment of redundancy. | [[JRA]](https://doi.org/10.1109/JRA.1987.1087068) |
 | Task-Priority Based Redundancy Control | 1987 | Formalizes executing a secondary task only in the null space of a primary one. | [[IJRR]](https://doi.org/10.1177/027836498700600201) |
 | A General Framework for Managing Multiple Tasks | 1991 | Recursive formulation extending task priority to any number of levels for highly redundant systems. | [[ICAR]](https://doi.org/10.1109/ICAR.1991.240390) |
 | Singularity-Robust Task-Priority Redundancy Resolution | 1997 | Decouples task levels to avoid the algorithmic singularities that arise when tasks conflict. | [[TRA]](https://doi.org/10.1109/70.585902) |
 | Generalizing Task Priority to Inequality Tasks | 2011 | Extends the prioritized framework to inequality constraints by solving a sequence of quadratic programs. | [[T-RO]](https://doi.org/10.1109/TRO.2011.2142450) |
 | Hierarchical Quadratic Programming | 2014 | Dedicated solver for strict hierarchies of equality and inequality tasks, fast enough for online humanoid motion generation. | [[IJRR]](https://doi.org/10.1177/0278364914521306) |
-| Saturation in the Null Space | 2015 | Handles hard joint position, velocity, and acceleration bounds by saturating joints one at a time and redistributing motion. | [[T-RO]](https://doi.org/10.1109/TRO.2015.2418582) |
+| Saturation&nbsp;in&nbsp;the&nbsp;Null&nbsp;Space | 2015 | Handles hard joint position, velocity, and acceleration bounds by saturating joints one at a time and redistributing motion. | [[T-RO]](https://doi.org/10.1109/TRO.2015.2418582) |
 | NEO | 2021 | Reactive velocity controller posed as a QP that avoids obstacles and joint limits while maximizing manipulability. | [[arXiv]](https://arxiv.org/abs/2010.08686) |
 | A Holistic Approach to Reactive Mobile Manipulation | 2022 | Treats a mobile base and arm as one kinematic chain in a reactive QP controller for motion on the move. | [[arXiv]](https://arxiv.org/abs/2109.04749) |
 
@@ -957,7 +957,7 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 | Camera-to-Robot Pose Estimation from a Single Image (DREAM) | 2020 | Detects robot keypoints in an RGB image and recovers the camera-to-robot transform, enabling markerless online calibration. | [[arXiv]](https://arxiv.org/abs/1911.09231) [[GitHub]](https://github.com/NVlabs/DREAM) |
 | RoboPose | 2021 | Render-and-compare estimation of a robot's 6D pose and joint angles from a single image. | [[arXiv]](https://arxiv.org/abs/2104.09359) |
 | Full-Body Visual Self-Modeling of Robot Morphologies | 2022 | Learns an implicit query-based model of the space a robot occupies as a function of its joint state, usable for planning. | [[arXiv]](https://arxiv.org/abs/2111.06389) |
-| Neural Jacobian Fields | 2024 | Learns a dense 3D field mapping motor commands to motion from video alone, enabling closed-loop control of soft and unconventional robots with one camera. | [[arXiv]](https://arxiv.org/abs/2407.08722) |
+| Neural&nbsp;Jacobian&nbsp;Fields | 2024 | Learns a dense 3D field mapping motor commands to motion from video alone, enabling closed-loop control of soft and unconventional robots with one camera. | [[arXiv]](https://arxiv.org/abs/2407.08722) |
 
 ---
 
@@ -972,7 +972,7 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 | Theseus | 2022 | Differentiable nonlinear least squares in PyTorch with Lie groups and differentiable forward kinematics. | [[arXiv]](https://arxiv.org/abs/2207.09442) [[GitHub]](https://github.com/facebookresearch/theseus) |
 | PyPose | 2023 | PyTorch library for Lie-group operations and second-order optimization in robotics. | [[arXiv]](https://arxiv.org/abs/2209.15428) [[GitHub]](https://github.com/pypose/pypose) |
 | cuRobo | 2023 | GPU-parallel kinematics, collision checking, and optimization that solves collision-free IK and motion generation in milliseconds. | [[arXiv]](https://arxiv.org/abs/2310.17274) [[GitHub]](https://github.com/NVlabs/curobo) |
-| Differentiable Robot Rendering | 2024 | Makes a robot's rendered appearance differentiable with respect to its joint angles, connecting image-space losses to kinematic control. | [[arXiv]](https://arxiv.org/abs/2410.13851) |
+| Differentiable&nbsp;Robot&nbsp;Rendering | 2024 | Makes a robot's rendered appearance differentiable with respect to its joint angles, connecting image-space losses to kinematic control. | [[arXiv]](https://arxiv.org/abs/2410.13851) |
 
 ---
 
@@ -1004,11 +1004,11 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 
 | Paper | Year | Description | Links |
 |-------|------|-------------|-------|
-| Dubins Curves | 1957 | Proves that the shortest path for a forward-only vehicle with bounded curvature consists of circular arcs and straight segments. | [[AJM]](https://doi.org/10.2307/2372560) |
+| Dubins&nbsp;Curves | 1957 | Proves that the shortest path for a forward-only vehicle with bounded curvature consists of circular arcs and straight segments. | [[AJM]](https://doi.org/10.2307/2372560) |
 | Kinematic Modeling of Wheeled Mobile Robots | 1987 | Systematic methodology for modeling wheeled robots with conventional, omnidirectional, and ball wheels. | [[JRS]](https://doi.org/10.1002/rob.4620040209) |
-| Reeds-Shepp Curves | 1990 | Extends Dubins' result to a car that can also reverse, characterizing the shortest paths with cusps. | [[PJM]](https://doi.org/10.2140/pjm.1990.145.367) |
+| Reeds&#8209;Shepp&nbsp;Curves | 1990 | Extends Dubins' result to a car that can also reverse, characterizing the shortest paths with cusps. | [[PJM]](https://doi.org/10.2140/pjm.1990.145.367) |
 | A Stable Tracking Control Method for an Autonomous Mobile Robot | 1990 | Classic kinematic trajectory-tracking law for unicycle-type robots with a Lyapunov stability proof. | [[ICRA]](https://doi.org/10.1109/ROBOT.1990.126006) |
-| Pure Pursuit | 1992 | Geometric path tracker that steers along the arc joining the vehicle to a look-ahead point on the path. | [[Report]](https://www.ri.cmu.edu/publications/implementation-of-the-pure-pursuit-path-tracking-algorithm/) |
+| Pure&nbsp;Pursuit | 1992 | Geometric path tracker that steers along the arc joining the vehicle to a look-ahead point on the path. | [[Report]](https://www.ri.cmu.edu/publications/implementation-of-the-pure-pursuit-path-tracking-algorithm/) |
 | Nonholonomic Motion Planning: Steering Using Sinusoids | 1993 | Steers nonholonomic systems in chained form using sinusoidal inputs, linking wheeled-robot kinematics to geometric control. | [[TAC]](https://doi.org/10.1109/9.277235) |
 | Structural Properties and Classification of Wheeled Mobile Robots | 1996 | Classifies all wheeled mobile robots into five types by their degrees of mobility and steerability. | [[TRA]](https://doi.org/10.1109/70.481750) |
 | Kinematic and Dynamic Vehicle Models for Autonomous Driving | 2015 | Compares kinematic and dynamic bicycle models for model predictive control and shows when the kinematic one suffices. | [[IV]](https://doi.org/10.1109/IVS.2015.7225830) |
@@ -1022,13 +1022,13 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 
 | Paper | Year | Description | Links |
 |-------|------|-------------|-------|
-| Resolved Momentum Control | 2003 | Generates humanoid whole-body motion by specifying desired linear and angular momentum and resolving it into joint velocities. | [[IROS]](https://doi.org/10.1109/IROS.2003.1248880) |
+| Resolved&nbsp;Momentum&nbsp;Control | 2003 | Generates humanoid whole-body motion by specifying desired linear and angular momentum and resolving it into joint velocities. | [[IROS]](https://doi.org/10.1109/IROS.2003.1248880) |
 | Synthesis of Whole-Body Behaviors | 2005 | Composes prioritized behavioral primitives for humanoids through recursive null-space projections. | [[IJHR]](https://doi.org/10.1142/S0219843605000594) |
-| Stack of Tasks | 2009 | Software framework implementing generalized inverted kinematics with a prioritized, reconfigurable task stack for humanoids. | [[ICAR]](https://ieeexplore.ieee.org/document/5174677) [[GitHub]](https://github.com/stack-of-tasks/sot-core) |
+| Stack&nbsp;of&nbsp;Tasks | 2009 | Software framework implementing generalized inverted kinematics with a prioritized, reconfigurable task stack for humanoids. | [[ICAR]](https://ieeexplore.ieee.org/document/5174677) [[GitHub]](https://github.com/stack-of-tasks/sot-core) |
 | State Estimation for Legged Robots | 2012 | Fuses leg forward kinematics with inertial measurements in an EKF to estimate base pose without assumptions on terrain. | [[RSS]](https://doi.org/10.15607/RSS.2012.VIII.003) |
 | Centroidal Dynamics of a Humanoid Robot | 2013 | Defines the centroidal momentum matrix that maps joint velocities to whole-body momentum. | [[AURO]](https://doi.org/10.1007/s10514-013-9341-4) |
 | Whole-Body Motion Planning with Centroidal Dynamics and Full Kinematics | 2014 | Combines a simple dynamics model with the full kinematic model to plan dynamic humanoid motions. | [[Humanoids]](https://doi.org/10.1109/HUMANOIDS.2014.7041375) |
-| Contact-Aided Invariant EKF | 2020 | Uses Lie-group symmetry and leg kinematics with contact for a legged state estimator with improved convergence. | [[arXiv]](https://arxiv.org/abs/1904.09251) [[GitHub]](https://github.com/RossHartley/invariant-ekf) |
+| Contact&#8209;Aided&nbsp;Invariant&nbsp;EKF | 2020 | Uses Lie-group symmetry and leg kinematics with contact for a legged state estimator with improved convergence. | [[arXiv]](https://arxiv.org/abs/1904.09251) [[GitHub]](https://github.com/RossHartley/invariant-ekf) |
 
 ---
 
@@ -1039,9 +1039,9 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 | Paper | Year | Description | Links |
 |-------|------|-------------|-------|
 | Retargetting Motion to New Characters | 1998 | Formulates retargeting as a spacetime constraint optimization that preserves key features of the original motion. | [[SIGGRAPH]](https://doi.org/10.1145/280814.280820) |
-| Neural Kinematic Networks | 2018 | Recurrent network with a differentiable forward kinematics layer trained without paired data to retarget motion between skeletons. | [[arXiv]](https://arxiv.org/abs/1804.05653) |
+| Neural&nbsp;Kinematic&nbsp;Networks | 2018 | Recurrent network with a differentiable forward kinematics layer trained without paired data to retarget motion between skeletons. | [[arXiv]](https://arxiv.org/abs/1804.05653) |
 | DexPilot | 2019 | Vision-based teleoperation that retargets a bare human hand to a dexterous robot hand with a fingertip-distance cost. | [[arXiv]](https://arxiv.org/abs/1910.03135) |
-| Skeleton-Aware Networks | 2020 | Skeletal convolution and pooling operators that retarget motion between skeletons with different structures (numbers of joints) without paired data. | [[arXiv]](https://arxiv.org/abs/2005.05732) |
+| Skeleton&#8209;Aware&nbsp;Networks | 2020 | Skeletal convolution and pooling operators that retarget motion between skeletons with different structures (numbers of joints) without paired data. | [[arXiv]](https://arxiv.org/abs/2005.05732) |
 | HybrIK | 2021 | Hybrid analytical-neural inverse kinematics using twist-and-swing decomposition to recover body pose from 3D joints. | [[arXiv]](https://arxiv.org/abs/2011.14672) [[GitHub]](https://github.com/Jeff-sjtu/HybrIK) |
 | AnyTeleop | 2023 | General vision-based dexterous teleoperation system whose retargeting module supports many arm and hand models. | [[arXiv]](https://arxiv.org/abs/2307.04577) [[GitHub]](https://github.com/dexsuite/dex-retargeting) |
 | GMR | 2025 | General motion retargeting for humanoids that studies how retargeting quality affects downstream motion-tracking policies. | [[arXiv]](https://arxiv.org/abs/2510.02252) [[GitHub]](https://github.com/YanjieZe/GMR) |
@@ -1088,8 +1088,8 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 
 | Paper | Year | Description | Links |
 |-------|------|-------------|-------|
-| Tsai-Lenz | 1989 | Efficient two-stage solution of the hand-eye equation AX = XB, rotation first and then translation. | [[TRA]](https://doi.org/10.1109/70.34770) |
-| Park-Martin | 1994 | Closed-form least-squares solution of AX = XB on the Euclidean group using Lie-group logarithms. | [[TRA]](https://doi.org/10.1109/70.326576) |
+| Tsai&#8209;Lenz | 1989 | Efficient two-stage solution of the hand-eye equation AX = XB, rotation first and then translation. | [[TRA]](https://doi.org/10.1109/70.34770) |
+| Park&#8209;Martin | 1994 | Closed-form least-squares solution of AX = XB on the Euclidean group using Lie-group logarithms. | [[TRA]](https://doi.org/10.1109/70.326576) |
 | Daniilidis | 1999 | Solves rotation and translation simultaneously with dual quaternions and a singular value decomposition. | [[IJRR]](https://doi.org/10.1177/02783649922066213) |
 
 ---
@@ -1118,10 +1118,10 @@ Kinematics has no single leaderboard comparable to those in perception. Evaluati
 | Collection | Format | Contents | Links |
 |------------|--------|----------|-------|
 | robot_descriptions.py | URDF, MJCF | Python loader for a large curated set of robot descriptions | [[GitHub]](https://github.com/robot-descriptions/robot_descriptions.py) |
-| Awesome Robot Descriptions | URDF, MJCF, Xacro | Curated index of robot description repositories | [[GitHub]](https://github.com/robot-descriptions/awesome-robot-descriptions) |
-| MuJoCo Menagerie | MJCF | High-quality, quality-checked models of arms, hands, quadrupeds, and humanoids | [[GitHub]](https://github.com/google-deepmind/mujoco_menagerie) |
-| example-robot-data | URDF, SRDF | Robot models used in the Pinocchio and Gepetto ecosystem | [[GitHub]](https://github.com/Gepetto/example-robot-data) |
-| URDF Files Dataset | URDF | Collection of URDF files gathered from many sources for tool testing | [[GitHub]](https://github.com/Daniella1/urdf_files_dataset) |
+| Awesome&nbsp;Robot&nbsp;Descriptions | URDF, MJCF, Xacro | Curated index of robot description repositories | [[GitHub]](https://github.com/robot-descriptions/awesome-robot-descriptions) |
+| MuJoCo&nbsp;Menagerie | MJCF | High-quality, quality-checked models of arms, hands, quadrupeds, and humanoids | [[GitHub]](https://github.com/google-deepmind/mujoco_menagerie) |
+| example&#8209;robot&#8209;data | URDF, SRDF | Robot models used in the Pinocchio and Gepetto ecosystem | [[GitHub]](https://github.com/Gepetto/example-robot-data) |
+| URDF&nbsp;Files&nbsp;Dataset | URDF | Collection of URDF files gathered from many sources for tool testing | [[GitHub]](https://github.com/Daniella1/urdf_files_dataset) |
 
 ### Motion Datasets
 
@@ -1136,7 +1136,7 @@ Kinematics has no single leaderboard comparable to those in perception. Evaluati
 
 | Resource | Description | Links |
 |----------|-------------|-------|
-| ISO 9283 | Performance criteria and test methods for industrial manipulators, including pose accuracy and repeatability. | [[ISO]](https://www.iso.org/standard/22244.html) |
+| ISO&nbsp;9283 | Performance criteria and test methods for industrial manipulators, including pose accuracy and repeatability. | [[ISO]](https://www.iso.org/standard/22244.html) |
 | MotionBenchMaker | Tool for generating and benchmarking manipulation motion planning datasets across robots and scenes. | [[arXiv]](https://arxiv.org/abs/2112.06402) [[GitHub]](https://github.com/KavrakiLab/motion_bench_maker) |
 | ik_benchmarking | Utilities for benchmarking MoveIt inverse kinematics plugins on success rate and solve time. | [[GitHub]](https://github.com/PickNikRobotics/ik_benchmarking) |
 
@@ -1152,7 +1152,7 @@ Kinematics has no single leaderboard comparable to those in perception. Evaluati
 | **Manipulability / Condition Number** | Distance from singularity and isotropy of the Jacobian | Dexterity, design, redundancy resolution |
 | **Joint&#8209;Limit&nbsp;Margin** | Distance of the solution from joint limits | Solution quality |
 | **Joint&nbsp;Velocity&nbsp;/&nbsp;Jerk** | Smoothness of consecutive solutions | Teleoperation and tracking |
-| **Pose Accuracy / Repeatability** | Deviation from commanded pose, and spread over repeated visits (ISO 9283) | Calibration and hardware qualification |
+| **Pose&nbsp;Accuracy&nbsp;/&nbsp;Repeatability** | Deviation from commanded pose, and spread over repeated visits (ISO 9283) | Calibration and hardware qualification |
 | **Residual&nbsp;After&nbsp;Calibration** | Remaining error on held-out measurement poses | Calibration quality |
 
 ---
@@ -1166,21 +1166,21 @@ Kinematics has no single leaderboard comparable to those in perception. Evaluati
 | Pinocchio | C++, Python | Fast rigid-body kinematics and dynamics with analytical derivatives. | [[GitHub]](https://github.com/stack-of-tasks/pinocchio) |
 | Drake | C++, Python | Multibody modeling with nonlinear, differential, and global inverse kinematics. | [[GitHub]](https://github.com/RobotLocomotion/drake) |
 | MuJoCo | C, Python | Physics engine whose kinematics, Jacobians, and models underpin much of current robot learning. | [[GitHub]](https://github.com/google-deepmind/mujoco) |
-| Orocos KDL | C++, Python | Kinematic chains and classic FK, IK, and Jacobian solvers; the long-time ROS default. | [[GitHub]](https://github.com/orocos/orocos_kinematics_dynamics) |
+| Orocos&nbsp;KDL | C++, Python | Kinematic chains and classic FK, IK, and Jacobian solvers; the long-time ROS default. | [[GitHub]](https://github.com/orocos/orocos_kinematics_dynamics) |
 | RBDL | C++, Python | Rigid body dynamics library implementing Featherstone's algorithms, with kinematics and IK. | [[GitHub]](https://github.com/rbdl/rbdl) |
 | DART | C++, Python | Kinematics and dynamics in generalized coordinates with accurate Jacobians. | [[GitHub]](https://github.com/dartsim/dart) |
 | iDynTree | C++, Python, MATLAB | Multibody kinematics and dynamics for floating-base robots, with identification tools. | [[GitHub]](https://github.com/gbionics/idyntree) |
 | Klampt | C++, Python | Modeling, kinematics, planning, and simulation toolkit with a compact IK interface. | [[GitHub]](https://github.com/krishauser/Klampt) |
-| Robotics Toolbox for Python | Python | Teaching and research toolbox with DH, ETS, and URDF models and many IK solvers. | [[GitHub]](https://github.com/petercorke/robotics-toolbox-python) |
-| Modern Robotics | Python, MATLAB, Mathematica | Reference implementations of the screw-theoretic algorithms from the textbook. | [[GitHub]](https://github.com/NxRLab/ModernRobotics) |
+| Robotics&nbsp;Toolbox&nbsp;for&nbsp;Python | Python | Teaching and research toolbox with DH, ETS, and URDF models and many IK solvers. | [[GitHub]](https://github.com/petercorke/robotics-toolbox-python) |
+| Modern&nbsp;Robotics | Python, MATLAB, Mathematica | Reference implementations of the screw-theoretic algorithms from the textbook. | [[GitHub]](https://github.com/NxRLab/ModernRobotics) |
 | OpenRAVE | C++, Python | Planning environment that includes the IKFast analytical solver generator. | [[GitHub]](https://github.com/rdiankov/openrave) |
-| MoveIt 2 | C++, Python | ROS 2 manipulation framework with a plugin interface for kinematics solvers. | [[GitHub]](https://github.com/moveit/moveit2) |
+| MoveIt&nbsp;2 | C++, Python | ROS 2 manipulation framework with a plugin interface for kinematics solvers. | [[GitHub]](https://github.com/moveit/moveit2) |
 
 ### Inverse Kinematics Solvers
 
 | Solver | Approach | Description | Links |
 |--------|----------|-------------|-------|
-| TRAC-IK | Newton plus SQP | Drop-in replacement for KDL's IK with better handling of joint limits. | [[Bitbucket]](https://bitbucket.org/traclabs/trac_ik) |
+| TRAC&#8209;IK | Newton plus SQP | Drop-in replacement for KDL's IK with better handling of joint limits. | [[Bitbucket]](https://bitbucket.org/traclabs/trac_ik) |
 | bio_ik | Memetic optimization | MoveIt plugin for multi-goal IK on arbitrary kinematic trees. | [[GitHub]](https://github.com/TAMS-Group/bio_ik) |
 | pick_ik | Gradient plus memetic | MoveIt 2 kinematics plugin with configurable cost functions. | [[GitHub]](https://github.com/PickNikRobotics/pick_ik) |
 | Pink | Differential IK (QP) | Weighted-task inverse kinematics built on Pinocchio. | [[GitHub]](https://github.com/pink-kinematics/pink) |
@@ -1202,7 +1202,7 @@ Kinematics has no single leaderboard comparable to those in perception. Evaluati
 | manif | Lie groups (C++, Python) | Small header-only Lie theory library with analytic Jacobians. | [[GitHub]](https://github.com/artivis/manif) |
 | jaxlie | Lie groups (JAX) | Rigid transforms and Lie groups for differentiable programming. | [[GitHub]](https://github.com/brentyi/jaxlie) |
 | RoMa | Rotations (PyTorch) | Differentiable rotation representations and conversions. | [[GitHub]](https://github.com/naver/roma) |
-| Spatial Maths for Python | Poses and twists | Classes for SO(n), SE(n), quaternions, and twists with plotting. | [[GitHub]](https://github.com/rai-opensource/spatialmath-python) |
+| Spatial&nbsp;Maths&nbsp;for&nbsp;Python | Poses and twists | Classes for SO(n), SE(n), quaternions, and twists with plotting. | [[GitHub]](https://github.com/rai-opensource/spatialmath-python) |
 | pytransform3d | Transforms | Conversions between rotation and transform conventions, with visualization and transform graphs. | [[GitHub]](https://github.com/dfki-ric/pytransform3d) |
 | tf2 | Frame graph | ROS 2 library tracking coordinate frames over time. | [[GitHub]](https://github.com/ros2/geometry2) |
 | yourdfpy | URDF | Python URDF parser and visualizer with forward kinematics. | [[GitHub]](https://github.com/clemense/yourdfpy) |
