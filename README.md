@@ -181,10 +181,12 @@ so the arm is singular exactly when $\theta_2 = 0$ or $\theta_2 = \pi$, that is,
 |-----|----------|---------------|
 | **Velocity mapping** | $\dot{x} = J(q)\,\dot{q}$ | End-effector velocity from joint velocities |
 | **Statics** | $\tau = J(q)^{\top} F$ | Joint torques that balance an end-effector force |
-| **Singularity detection** | $\mathrm{rank} J < m$ | Configurations where some task direction cannot be produced |
+| **Singularity detection** | $\mathrm{rank}\, J(q) < \min(m, n)$ | Configurations where the Jacobian loses rank and some task direction cannot be produced |
 | **Numerical inverse kinematics** | $\Delta q = J^{+} e$ | A joint step that reduces the pose error $e$ |
 | **Manipulability** | $w = \sqrt{\det(J J^{\top})}$ | A scalar measure of distance from singularity |
 | **Redundancy resolution** | $\dot{q} = J^{+}\dot{x} + (I - J^{+}J)\,\dot{q}_0$ | Secondary motion that does not disturb the task |
+
+These relations are standard and follow Siciliano et al. (Chapter 3) and Lynch and Park (Chapters 5 and 6); the manipulability measure is Yoshikawa's.
 
 The **geometric Jacobian** maps joint velocities to linear and angular velocity; the **analytical Jacobian** maps them to the time derivative of a chosen pose parameterization such as Euler angles. The two agree on the translational part and differ on the rotational part. Papers on the Jacobian and its uses are collected under [Differential Kinematics, Redundancy & Singularities](#-differential-kinematics-redundancy--singularities).
 
@@ -315,6 +317,8 @@ The classic problems share one model and differ in what is known and what is ask
 ## 🧪 Worked Examples
 
 Four solved problems, each starting from a Denavit-Hartenberg table and worked with homogeneous transformation matrices: one for each of the core questions on a planar arm, then a spatial arm solved end to end. Each has the full written solution and an animation that walks through the same steps.
+
+> 📚 **Conventions and sources.** The link transform $A_i$ is the standard (distal) Denavit-Hartenberg convention, $A_i = \mathrm{Rot}_z(\theta_i)\,\mathrm{Trans}_z(d_i)\,\mathrm{Trans}_x(a_i)\,\mathrm{Rot}_x(\alpha_i)$, as used by Spong, Hutchinson, and Vidyasagar and by Siciliano et al. (Chapter 2). The Jacobian column formula $z_{i-1} \times (p_e - p_{i-1})$ is the geometric Jacobian of Siciliano et al. (Chapter 3). Craig's textbook uses the modified (proximal) convention, so its tables and matrices for the same arm look different while the final pose is the same. Full citations are in [References](#-references).
 
 ---
 
@@ -754,7 +758,7 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 |-------|------|-------------|-------|
 | Inverse Kinematics of the General 6R Manipulator | 1993 | Reduces the general 6R problem to a 16th-degree polynomial by dialytic elimination, giving all solutions for arbitrary geometry. | [[JMD]](https://doi.org/10.1115/1.2919218) |
 | Efficient Inverse Kinematics for General 6R Manipulators | 1994 | Recasts the Raghavan-Roth elimination as an eigenvalue problem for a numerically robust and fast implementation. | [[TRA]](https://doi.org/10.1109/70.326569) |
-| A New and Efficient Algorithm for the General 6R | 2007 | Solves the general 6R inverse kinematics using kinematic mapping and the geometry of the Study quadric. | [[MMT]](https://www.sciencedirect.com/science/article/abs/pii/S0094114X06000310) |
+| A New and Efficient Algorithm for the General 6R | 2007 | Solves the general 6R inverse kinematics using kinematic mapping and the geometry of the Study quadric. | [[MMT]](https://doi.org/10.1016/j.mechmachtheory.2006.02.001) |
 | Analytical IK for 7-DOF Redundant Manipulators | 2008 | Closed-form solution for spherical-revolute-spherical arms parameterized by an arm angle, with joint limits mapped to feasible arm-angle intervals. | [[T-RO]](https://doi.org/10.1109/TRO.2008.2003266) |
 | Analytic IK for the Universal Robots UR-5/UR-10 | 2013 | Derives the closed-form solution for the UR family, whose three parallel axes replace the usual spherical wrist. | [[Report]](https://repository.gatech.edu/handle/1853/50782) |
 | Position-based Kinematics for 7-DoF Serial Manipulators | 2018 | Analytical solution for 7-DOF arms with global configuration control, joint-limit handling, and singularity avoidance. | [[MMT]](https://doi.org/10.1016/j.mechmachtheory.2017.10.025) |
@@ -907,7 +911,7 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 | The Stewart Platform of General Geometry Has 40 Configurations | 1993 | Shows numerically that the forward kinematics of the general Gough-Stewart platform has 40 solutions in the complex domain. | [[JMD]](https://doi.org/10.1115/1.2919188) |
 | An Algorithm for Solving the Direct Kinematics of General Stewart-Gough Platforms | 1996 | Derives the 40th-degree univariate polynomial for the forward kinematics using kinematic mapping. | [[MMT]](https://doi.org/10.1016/0094-114X%2895%2900091-C) |
 | The Stewart-Gough Platform of General Geometry Can Have 40 Real Postures | 1998 | Constructs a platform geometry for which all 40 forward kinematic solutions are real. | [[Springer]](https://doi.org/10.1007/978-94-015-9064-8_1) |
-| Constraint Singularities of Parallel Mechanisms | 2002 | Identifies a class of singularities in lower-mobility parallel mechanisms where the platform gains unwanted degrees of freedom. | [[ICRA]](https://espace2.etsmtl.ca/id/eprint/9908/) |
+| Constraint Singularities of Parallel Mechanisms | 2002 | Identifies a class of singularities in lower-mobility parallel mechanisms where the platform gains unwanted degrees of freedom. | [[ICRA]](https://doi.org/10.1109/ROBOT.2002.1013408) |
 | Parallel Robots | 2006 | The reference monograph on parallel robot architectures, kinematics, singularities, workspace, and calibration. | [[Springer]](https://doi.org/10.1007/1-4020-4133-0) |
 
 ---
