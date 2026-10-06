@@ -78,6 +78,8 @@ This repository collects robot kinematics research, featuring:
 
 - **120+ papers** spanning from foundational works (Denavit-Hartenberg, 1955; Pieper, 1968; Whitney, 1969) to GPU-batched and generative inverse kinematics (2025)
 - **Unified taxonomy** organizing research by Mechanisms × Representations × Problems
+- **Concept primers with the math** for forward kinematics, inverse kinematics, and the Jacobian matrix
+- **Four worked examples** solved from Denavit-Hartenberg tables with transformation matrices, each with a step-by-step animation
 - **Task and strength guide** that maps jobs (closed-form IK, redundancy resolution, whole-body control, calibration, …) to the methods best suited to them
 - **10+ robot model collections, motion datasets, standards, and evaluation tools** (MuJoCo Menagerie, robot_descriptions, AMASS, ISO 9283, etc.)
 - **30+ open-source frameworks and libraries** (Pinocchio, Drake, KDL, MoveIt 2, TRAC-IK, cuRobo, etc.)
@@ -147,12 +149,12 @@ T_n^0(q) = A_1(q_1) \, A_2(q_2) \cdots A_n(q_n)
 
 <div align="center">
 
-| Parameter | Symbol | Meaning | Joint variable when |
+| Parameter | Symbol | Meaning | Joint Variable When |
 |:---------:|:------:|:-------:|:-------------------:|
-| Joint&nbsp;angle | $\theta_i$ | Rotation about $z_{i-1}$ | The joint is revolute |
-| Link&nbsp;offset | $d_i$ | Translation along $z_{i-1}$ | The joint is prismatic |
-| Link&nbsp;length | $a_i$ | Translation along $x_i$ | Never (fixed by the design) |
-| Link&nbsp;twist | $\alpha_i$ | Rotation about $x_i$ | Never (fixed by the design) |
+| **Joint&nbsp;angle** | $\theta_i$ | Rotation about $z_{i-1}$ | The joint is revolute |
+| **Link&nbsp;offset** | $d_i$ | Translation along $z_{i-1}$ | The joint is prismatic |
+| **Link&nbsp;length** | $a_i$ | Translation along $x_i$ | Never (fixed by the design) |
+| **Link&nbsp;twist** | $\alpha_i$ | Rotation about $x_i$ | Never (fixed by the design) |
 
 </div>
 
@@ -174,14 +176,14 @@ A_i =
 T(q) = e^{[\mathcal{S}_1] q_1} \, e^{[\mathcal{S}_2] q_2} \cdots e^{[\mathcal{S}_n] q_n} \, M
 ```
 
-**Example: planar 2R arm.** With link lengths $l_1, l_2$ and the shorthand $c_1 = \cos\theta_1$, $s_{12} = \sin(\theta_1 + \theta_2)$, multiplying the two link transforms gives
+**Example: planar 2R arm.** With link lengths $a_1, a_2$ and the shorthand $c_1 = \cos\theta_1$, $s_{12} = \sin(\theta_1 + \theta_2)$, multiplying the two link transforms gives
 
 ```math
-x = l_1 c_1 + l_2 c_{12}, \qquad y = l_1 s_1 + l_2 s_{12}, \qquad \phi = \theta_1 + \theta_2
+x = a_1 c_1 + a_2 c_{12}, \qquad y = a_1 s_1 + a_2 s_{12}, \qquad \phi = \theta_1 + \theta_2
 ```
 
 <p align="center">
-  <img src="figures/forward_kinematics.gif" alt="Animation of a three-joint planar arm whose end-effector position is computed from its joint angles" width="600">
+  <img src="figures/forward_kinematics.gif" alt="Animation of a three-joint planar arm whose end-effector position is computed from its joint angles" width="640">
 </p>
 
 | Mechanism | Forward Kinematics | Why |
@@ -195,7 +197,7 @@ This section follows Siciliano et al. (Chapter 2) and Spong, Hutchinson, and Vid
 
 ### Inverse Kinematics
 
-**Inverse kinematics** answers the opposite question: "which joint values put the end-effector at a desired pose $T_d$?" It means solving
+**Inverse kinematics** answers the opposite question: "which joint values put the end-effector at a desired pose?" With the desired pose $x_d$ written as a transform $T_d$, it means solving
 
 ```math
 T_n^0(q) = T_d
@@ -205,25 +207,25 @@ for $q$. The equations are nonlinear in the joint angles, so three things that a
 
 | Situation | Number of Solutions | Example |
 |-----------|---------------------|---------|
-| Target&nbsp;outside&nbsp;the&nbsp;workspace | None | A point farther than the arm can reach |
-| Non&#8209;redundant&nbsp;arm&nbsp;(*n*&nbsp;=&nbsp;*m*) | Finite | 2 for a planar 2R arm; up to 8 for a 6R arm with a spherical wrist; up to 16 for a general 6R arm |
-| Redundant&nbsp;arm&nbsp;(*n*&nbsp;>&nbsp;*m*) | Infinitely many | A 7-joint arm can move its elbow while the hand stays fixed |
-| At&nbsp;a&nbsp;singularity | Solutions merge or become infinite | A planar 2R arm stretched straight |
+| **Target&nbsp;outside&nbsp;the&nbsp;workspace** | None | A point farther than the arm can reach |
+| **Non&#8209;redundant&nbsp;arm&nbsp;(*n*&nbsp;=&nbsp;*m*)** | Finite | 2 for a planar 2R arm; up to 8 for a 6R arm with a spherical wrist; up to 16 for a general 6R arm |
+| **Redundant&nbsp;arm&nbsp;(*n*&nbsp;>&nbsp;*m*)** | Infinitely many | A 7-joint arm can move its elbow while the hand stays fixed |
+| **At&nbsp;a&nbsp;singularity** | Solutions merge or become infinite | A planar 2R arm stretched straight |
 
 **Closed-form solution.** When the geometry allows it, the equations are solved by algebra or trigonometry. For the planar 2R arm, squaring and adding the two position equations eliminates $\theta_1$:
 
 ```math
-\cos\theta_2 = \frac{x^2 + y^2 - l_1^2 - l_2^2}{2 l_1 l_2}, \qquad \theta_2 = \pm \arccos(\cdot)
+\cos\theta_2 = \frac{x^2 + y^2 - a_1^2 - a_2^2}{2 a_1 a_2}, \qquad \theta_2 = \pm \arccos(\cdot)
 ```
 
 ```math
-\theta_1 = \mathrm{atan2}(y, x) - \mathrm{atan2}(l_2 \sin\theta_2, \; l_1 + l_2 \cos\theta_2)
+\theta_1 = \mathrm{atan2}(y, x) - \mathrm{atan2}(a_2 \sin\theta_2, \; a_1 + a_2 \cos\theta_2)
 ```
 
 The two signs of $\theta_2$ are the elbow-down and elbow-up solutions. For 6-joint arms, a closed form is guaranteed when three consecutive joint axes intersect at a point (Pieper's condition, met by a spherical wrist), because the problem then splits into a position problem for the first three joints and an orientation problem for the last three.
 
 <p align="center">
-  <img src="figures/inverse_kinematics.gif" alt="Animation of a two-joint arm reaching a moving target with both its elbow-up and elbow-down solutions" width="600">
+  <img src="figures/inverse_kinematics.gif" alt="Animation of a two-joint arm reaching a moving target with both its elbow-up and elbow-down solutions" width="640">
 </p>
 
 **Numerical solution.** For any other arm, start from a guess and repeatedly correct it using the pose error $e$ and the Jacobian $J$ (introduced in the next section). The Newton-Raphson step and its damped least squares variant, which stays well behaved near singularities, are
@@ -258,32 +260,32 @@ J(q) = \frac{\partial f}{\partial q} =
 \in \mathbb{R}^{m \times n}
 ```
 
-Column $i$ is the end-effector velocity produced when joint $i$ moves at unit speed and every other joint is held still. For a spatial arm the columns of the geometric Jacobian can be written down directly from the joint axes $z_i$, the joint positions $p_i$, and the end-effector position $p_e$:
+Column $i$ is the end-effector velocity produced when joint $i$ moves at unit speed and every other joint is held still. With Denavit-Hartenberg frames, joint $i$ moves about or along the axis $z_{i-1}$ of frame $i-1$, whose origin is $p_{i-1}$. The columns of the geometric Jacobian can then be written down directly from these and the end-effector position $p_e$:
 
 ```math
 J_i =
-\begin{bmatrix} z_i \times (p_e - p_i) \\ z_i \end{bmatrix} \ \text{(revolute)}
+\begin{bmatrix} z_{i-1} \times (p_e - p_{i-1}) \\ z_{i-1} \end{bmatrix} \ \text{(revolute)}
 \qquad
 J_i =
-\begin{bmatrix} z_i \\ 0 \end{bmatrix} \ \text{(prismatic)}
+\begin{bmatrix} z_{i-1} \\ 0 \end{bmatrix} \ \text{(prismatic)}
 ```
 
-**Worked example: planar 2R arm.** With link lengths $l_1, l_2$ and the shorthand $s_1 = \sin\theta_1$, $c_{12} = \cos(\theta_1 + \theta_2)$, the forward kinematics is $x = l_1 c_1 + l_2 c_{12}$, $y = l_1 s_1 + l_2 s_{12}$. Differentiating gives
+**Example: planar 2R arm.** With link lengths $a_1, a_2$ and the shorthand $s_1 = \sin\theta_1$, $c_{12} = \cos(\theta_1 + \theta_2)$, the forward kinematics is $x = a_1 c_1 + a_2 c_{12}$, $y = a_1 s_1 + a_2 s_{12}$. Differentiating gives
 
 ```math
 J(\theta) =
 \begin{bmatrix}
--l_1 s_1 - l_2 s_{12} & -l_2 s_{12} \\
-l_1 c_1 + l_2 c_{12} & l_2 c_{12}
+-a_1 s_1 - a_2 s_{12} & -a_2 s_{12} \\
+a_1 c_1 + a_2 c_{12} & a_2 c_{12}
 \end{bmatrix},
 \qquad
-\det J = l_1 l_2 \sin\theta_2
+\det J = a_1 a_2 \sin\theta_2
 ```
 
 so the arm is singular exactly when $\theta_2 = 0$ or $\theta_2 = \pi$, that is, when it is fully stretched out or folded back on itself.
 
 <p align="center">
-  <img src="figures/jacobian_matrix.gif" alt="Animation of a two-joint arm showing the two columns of its Jacobian as velocity arrows at the end-effector" width="600">
+  <img src="figures/jacobian_matrix.gif" alt="Animation of a two-joint arm showing the two columns of its Jacobian as velocity arrows at the end-effector" width="640">
 </p>
 
 | Use | Relation | What It Gives |
@@ -295,9 +297,9 @@ so the arm is singular exactly when $\theta_2 = 0$ or $\theta_2 = \pi$, that is,
 | **Manipulability** | $w = \sqrt{\det(J J^{\top})}$ | A scalar measure of distance from singularity |
 | **Redundancy&nbsp;resolution** | $\dot{q} = J^{+}\dot{x} + (I - J^{+}J) \dot{q}_0$ | Secondary motion that does not disturb the task |
 
-These relations are standard and follow Siciliano et al. (Chapter 3) and Lynch and Park (Chapters 5 and 6); the manipulability measure is Yoshikawa's.
+The **geometric Jacobian** maps joint velocities to linear and angular velocity; the **analytical Jacobian** maps them to the time derivative of a chosen pose parameterization such as Euler angles. The two agree on the translational part and differ on the rotational part.
 
-The **geometric Jacobian** maps joint velocities to linear and angular velocity; the **analytical Jacobian** maps them to the time derivative of a chosen pose parameterization such as Euler angles. The two agree on the translational part and differ on the rotational part. Papers on the Jacobian and its uses are collected under [Differential Kinematics, Redundancy & Singularities](#-differential-kinematics-redundancy--singularities).
+This section follows Siciliano et al. (Chapter 3) and Lynch and Park (Chapters 5 and 6); the manipulability measure is due to Yoshikawa. Fully worked cases are in [Solved Problem 3](#-solved-problem-3-the-jacobian-matrix) and [Solved Problem 4](#-solved-problem-4-a-spatial-arm-with-transformation-matrices), and papers are collected under [Differential Kinematics, Redundancy & Singularities](#-differential-kinematics-redundancy--singularities).
 
 ### Four Ages of Robot Kinematics
 
@@ -336,7 +338,7 @@ The mechanism determines WHAT the kinematic map looks like.
 
 | Class | Degrees of Freedom | Inverse Kinematics |
 |-------|--------------------|--------------------|
-| **Non&#8209;redundant** | Equal to the task dimension (6 for full pose) | Finite number of solutions; up to 16 for a general 6R arm, 8 for most industrial arms |
+| **Non&#8209;redundant** | Equal to the task dimension (6 for full pose) | Finite number of solutions; up to 16 for a general 6R arm, up to 8 for a 6R arm with a spherical wrist |
 | **Redundant** | More than the task needs (7-DOF arms) | Infinitely many solutions forming a self-motion manifold |
 | **Hyper&#8209;redundant** | Far more than the task needs (snake arms) | Usually solved through a backbone curve rather than joint by joint |
 
@@ -435,11 +437,15 @@ Four solved problems, each starting from a Denavit-Hartenberg table and worked w
 
 > **Problem.** A planar 3R arm is described by the Denavit-Hartenberg table below, with lengths in meters. Find the position and orientation of the end-effector.
 
+<div align="center">
+
 | Joint $i$ | $\theta_i$ | $d_i$ | $a_i$ | $\alpha_i$ |
-|-----------|-----------|-------|-------|-----------|
+|:---------:|:---------:|:-----:|:-----:|:---------:|
 | 1 | $30^\circ$ | 0 | 1.0 | 0 |
 | 2 | $45^\circ$ | 0 | 0.8 | 0 |
 | 3 | $-30^\circ$ | 0 | 0.5 | 0 |
+
+</div>
 
 <p align="center">
   <img src="figures/example_forward_kinematics.gif" alt="Animation solving the forward kinematics of a planar three-joint arm from its Denavit-Hartenberg table, one link transform at a time" width="640">
@@ -507,10 +513,14 @@ T_3^0 = A_1 A_2 A_3 =
 
 > **Problem.** A planar 2R arm is described by the Denavit-Hartenberg table below, with lengths in meters. Find all joint angles $\theta_1, \theta_2$ that place the end-effector at $(x, y) = (1.2, 0.9)$ m.
 
+<div align="center">
+
 | Joint $i$ | $\theta_i$ | $d_i$ | $a_i$ | $\alpha_i$ |
-|-----------|-----------|-------|-------|-----------|
+|:---------:|:---------:|:-----:|:-----:|:---------:|
 | 1 | $\theta_1$ | 0 | 1.0 | 0 |
 | 2 | $\theta_2$ | 0 | 0.8 | 0 |
+
+</div>
 
 <p align="center">
   <img src="figures/example_inverse_kinematics.gif" alt="Animation solving the inverse kinematics of a planar two-joint arm from its Denavit-Hartenberg table, ending with the elbow-down and elbow-up solutions" width="640">
@@ -550,10 +560,14 @@ c_1 + 0.8\,c_{12} = 1.2, \qquad s_1 + 0.8\,s_{12} = 0.9
 
 **Answer.**
 
+<div align="center">
+
 | Solution | $\theta_1$ | $\theta_2$ |
-|----------|-----------|-----------|
-| Elbow&nbsp;down | $7.3^\circ$ | $67.6^\circ$ |
-| Elbow&nbsp;up | $66.4^\circ$ | $-67.6^\circ$ |
+|:--------:|:---------:|:---------:|
+| **Elbow&nbsp;down** | $7.3^\circ$ | $67.6^\circ$ |
+| **Elbow&nbsp;up** | $66.4^\circ$ | $-67.6^\circ$ |
+
+</div>
 
 ---
 
@@ -561,10 +575,14 @@ c_1 + 0.8\,c_{12} = 1.2, \qquad s_1 + 0.8\,s_{12} = 0.9
 
 > **Problem.** The 2R arm of Problem 2 is at the configuration in the table below and its joints turn at $\dot\theta = (0.5, -1.0)$ rad/s. Find the Jacobian, the end-effector velocity, and whether the arm is at a singularity.
 
+<div align="center">
+
 | Joint $i$ | $\theta_i$ | $d_i$ | $a_i$ | $\alpha_i$ |
-|-----------|-----------|-------|-------|-----------|
+|:---------:|:---------:|:-----:|:-----:|:---------:|
 | 1 | $30^\circ$ | 0 | 1.0 | 0 |
 | 2 | $60^\circ$ | 0 | 0.8 | 0 |
+
+</div>
 
 <p align="center">
   <img src="figures/example_jacobian.gif" alt="Animation building the Jacobian of a planar two-joint arm from its Denavit-Hartenberg transforms, column by column, then combining the columns into the end-effector velocity" width="640">
@@ -628,11 +646,15 @@ v = J\,\dot\theta = 0.5 \begin{bmatrix} -1.300 \\ 0.866 \end{bmatrix} - 1.0 \beg
 
 > **Problem.** A spatial 3R arm (waist, shoulder, elbow) is described by the Denavit-Hartenberg table below, with lengths in meters. At $\theta = (30^\circ, 60^\circ, -90^\circ)$ and joint rates $\dot\theta = (0.5, -0.4, 0.8)$ rad/s, find (a) the pose of the tip frame, (b) the Jacobian for linear velocity, and (c) the tip velocity and whether the arm is at a singularity.
 
+<div align="center">
+
 | Joint $i$ | $\theta_i$ | $d_i$ | $a_i$ | $\alpha_i$ |
-|-----------|-----------|-------|-------|-----------|
+|:---------:|:---------:|:-----:|:-----:|:---------:|
 | 1 | $\theta_1$ | 0.4 | 0 | $90^\circ$ |
 | 2 | $\theta_2$ | 0 | 0.5 | 0 |
 | 3 | $\theta_3$ | 0 | 0.4 | 0 |
+
+</div>
 
 <p align="center">
   <img src="figures/example_spatial_arm.gif" alt="Animation of a spatial three-joint arm solved with transformation matrices: three link transforms are chained into the tip pose, then the Jacobian columns and the tip velocity are drawn" width="640">
@@ -745,7 +767,7 @@ The taxonomy above describes how kinematics methods are *built*. This section cl
 | **🕸&nbsp;Parallel&nbsp;robot&nbsp;kinematics** | Platform pose from leg lengths, and singularity maps | Husty's algorithm, Gosselin-Angeles classification, Merlet's interval methods | Forward kinematics has up to 40 solutions; singularities must be mapped in advance |
 | **🚗&nbsp;Mobile&nbsp;base&nbsp;motion** | Feasible paths and velocity commands | Unicycle and bicycle models, Dubins and Reeds-Shepp curves, pure pursuit | Encode nonholonomic constraints directly in the model |
 | **🐍&nbsp;Continuum&nbsp;robot&nbsp;shape** | Backbone shape from actuator inputs | Piecewise constant curvature, Cosserat rod models, modal approaches | Reduce an infinite-dimensional shape to a few parameters |
-| **🎯&nbsp;Model&nbsp;calibration** | Corrected geometric parameters and sensor mounting | POE-based calibration, Hayati parameters, Tsai-Lenz, Park-Martin, DREAM | Identify link parameters and hand-eye transforms from measurements |
+| **🎯&nbsp;Model&nbsp;calibration** | Corrected geometric parameters and sensor mounting | Product-of-exponentials calibration, Hayati parameters, Tsai-Lenz, Park-Martin, DREAM | Identify link parameters and hand-eye transforms from measurements |
 | **🌐&nbsp;Robot&nbsp;placement&nbsp;and&nbsp;design** | Where the robot can reach, and how well | Capability maps, Reuleaux, manipulability and conditioning indices | Precompute reachability and dexterity over the workspace |
 
 ---
@@ -867,7 +889,7 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 > **Numerical IK** iterates toward a solution instead of deriving one. It works for any mechanism and any set of constraints, at the price of needing an initial guess and returning one local solution at a time.
 
 <p align="center">
-  <img src="figures/numerical_ik.gif" alt="Animation of damped least squares iterations moving a three-joint arm toward a target" width="600">
+  <img src="figures/numerical_ik.gif" alt="Animation of damped least squares iterations moving a three-joint arm toward a target" width="640">
 </p>
 
 ##### 📉 **Jacobian-based Iterative Methods**
@@ -919,7 +941,7 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 #### 🧭 **Manipulability & Singularities**
 
 <p align="center">
-  <img src="figures/manipulability_ellipse.gif" alt="Animation of the manipulability ellipse of a two-joint arm collapsing as the arm approaches a singularity" width="600">
+  <img src="figures/manipulability_ellipse.gif" alt="Animation of the manipulability ellipse of a two-joint arm collapsing as the arm approaches a singularity" width="640">
 </p>
 
 | Paper | Year | Description | Links |
@@ -933,7 +955,7 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 #### 🧩 **Redundancy Resolution & Task Priority**
 
 <p align="center">
-  <img src="figures/null_space_motion.gif" alt="Animation of a three-joint arm changing its joint angles while its end-effector position stays fixed" width="600">
+  <img src="figures/null_space_motion.gif" alt="Animation of a three-joint arm changing its joint angles while its end-effector position stays fixed" width="640">
 </p>
 
 | Paper | Year | Description | Links |
@@ -985,7 +1007,7 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 > **Parallel robots** connect the end-effector to the base through several chains. Their inverse kinematics is usually trivial; their forward kinematics and singularity structure are among the hardest problems in the field.
 
 <p align="center">
-  <img src="figures/parallel_five_bar.gif" alt="Animation of a five-bar parallel mechanism tracing a closed path with two actuated joints" width="600">
+  <img src="figures/parallel_five_bar.gif" alt="Animation of a five-bar parallel mechanism tracing a closed path with two actuated joints" width="640">
 </p>
 
 | Paper | Year | Description | Links |
@@ -1003,7 +1025,7 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 > **Mobile robot kinematics** is governed by rolling constraints. Because a wheel cannot slip sideways, the robot can reach any pose in the plane but cannot move in every direction at every instant.
 
 <p align="center">
-  <img src="figures/mobile_robot_kinematics.gif" alt="Animation of a kinematic bicycle model following a figure-eight path with pure pursuit" width="600">
+  <img src="figures/mobile_robot_kinematics.gif" alt="Animation of a kinematic bicycle model following a figure-eight path with pure pursuit" width="640">
 </p>
 
 | Paper | Year | Description | Links |
@@ -1057,7 +1079,7 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 > **Continuum robots** bend along their whole length. Their kinematics maps actuator inputs (tendon lengths, tube rotations, chamber pressures) to a backbone shape, and for soft or slender robots that shape depends on elasticity and external loads as well as geometry.
 
 <p align="center">
-  <img src="figures/continuum_robot.gif" alt="Animation of a two-section constant-curvature continuum robot bending as its curvatures change" width="600">
+  <img src="figures/continuum_robot.gif" alt="Animation of a two-section constant-curvature continuum robot bending as its curvatures change" width="640">
 </p>
 
 | Paper | Year | Description | Links |
