@@ -11,6 +11,10 @@
 
 </div>
 
+<p align="center">
+  <img src="figures/teaser.gif" alt="Teaser animation: a path in joint space maps through a two-joint arm to a path in task space by forward kinematics, and back by inverse kinematics, with the Jacobian relating the two velocities" width="100%">
+</p>
+
 ---
 
 ## 📖 Table of Contents
@@ -161,7 +165,7 @@ J_i =
 J(\theta) =
 \begin{bmatrix}
 -l_1 s_1 - l_2 s_{12} & -l_2 s_{12} \\
-\phantom{-}l_1 c_1 + l_2 c_{12} & \phantom{-}l_2 c_{12}
+l_1 c_1 + l_2 c_{12} & l_2 c_{12}
 \end{bmatrix},
 \qquad
 \det J = l_1 l_2 \sin\theta_2
@@ -177,7 +181,7 @@ so the arm is singular exactly when $\theta_2 = 0$ or $\theta_2 = \pi$, that is,
 |-----|----------|---------------|
 | **Velocity mapping** | $\dot{x} = J(q)\,\dot{q}$ | End-effector velocity from joint velocities |
 | **Statics** | $\tau = J(q)^{\top} F$ | Joint torques that balance an end-effector force |
-| **Singularity detection** | $\operatorname{rank} J < m$ | Configurations where some task direction cannot be produced |
+| **Singularity detection** | $\mathrm{rank} J < m$ | Configurations where some task direction cannot be produced |
 | **Numerical inverse kinematics** | $\Delta q = J^{+} e$ | A joint step that reduces the pose error $e$ |
 | **Manipulability** | $w = \sqrt{\det(J J^{\top})}$ | A scalar measure of distance from singularity |
 | **Redundancy resolution** | $\dot{q} = J^{+}\dot{x} + (I - J^{+}J)\,\dot{q}_0$ | Secondary motion that does not disturb the task |
@@ -335,8 +339,8 @@ Four solved problems, each starting from a Denavit-Hartenberg table and worked w
 ```math
 A_i =
 \begin{bmatrix}
-\cos\theta_i & -\sin\theta_i\cos\alpha_i & \phantom{-}\sin\theta_i\sin\alpha_i & a_i\cos\theta_i \\
-\sin\theta_i & \phantom{-}\cos\theta_i\cos\alpha_i & -\cos\theta_i\sin\alpha_i & a_i\sin\theta_i \\
+\cos\theta_i & -\sin\theta_i\cos\alpha_i & \sin\theta_i\sin\alpha_i & a_i\cos\theta_i \\
+\sin\theta_i & \cos\theta_i\cos\alpha_i & -\cos\theta_i\sin\alpha_i & a_i\sin\theta_i \\
 0 & \sin\alpha_i & \cos\alpha_i & d_i \\
 0 & 0 & 0 & 1
 \end{bmatrix}
@@ -348,7 +352,7 @@ A_i =
 A_1 =
 \begin{bmatrix}
 0.866 & -0.500 & 0 & 0.866 \\
-0.500 & \phantom{-}0.866 & 0 & 0.500 \\
+0.500 & 0.866 & 0 & 0.500 \\
 0 & 0 & 1 & 0 \\
 0 & 0 & 0 & 1
 \end{bmatrix}
@@ -356,14 +360,14 @@ A_1 =
 A_2 =
 \begin{bmatrix}
 0.707 & -0.707 & 0 & 0.566 \\
-0.707 & \phantom{-}0.707 & 0 & 0.566 \\
+0.707 & 0.707 & 0 & 0.566 \\
 0 & 0 & 1 & 0 \\
 0 & 0 & 0 & 1
 \end{bmatrix}
 \quad
 A_3 =
 \begin{bmatrix}
-\phantom{-}0.866 & 0.500 & 0 & \phantom{-}0.433 \\
+0.866 & 0.500 & 0 & 0.433 \\
 -0.500 & 0.866 & 0 & -0.250 \\
 0 & 0 & 1 & 0 \\
 0 & 0 & 0 & 1
@@ -376,7 +380,7 @@ A_3 =
 T_2^0 = A_1 A_2 =
 \begin{bmatrix}
 0.259 & -0.966 & 0 & 1.073 \\
-0.966 & \phantom{-}0.259 & 0 & 1.273 \\
+0.966 & 0.259 & 0 & 1.273 \\
 0 & 0 & 1 & 0 \\
 0 & 0 & 0 & 1
 \end{bmatrix}
@@ -384,13 +388,13 @@ T_2^0 = A_1 A_2 =
 T_3^0 = A_1 A_2 A_3 =
 \begin{bmatrix}
 0.707 & -0.707 & 0 & 1.427 \\
-0.707 & \phantom{-}0.707 & 0 & 1.626 \\
+0.707 & 0.707 & 0 & 1.626 \\
 0 & 0 & 1 & 0 \\
 0 & 0 & 0 & 1
 \end{bmatrix}
 ```
 
-3. **Read off the pose.** The last column of $T_3^0$ is the position. The rotation block is a rotation about $z$ by $\operatorname{atan2}(0.707,\; 0.707) = 45^\circ$, which equals $\theta_1 + \theta_2 + \theta_3$ as expected for a planar arm.
+3. **Read off the pose.** The last column of $T_3^0$ is the position. The rotation block is a rotation about $z$ by $\mathrm{atan2}(0.707,\; 0.707) = 45^\circ$, which equals $\theta_1 + \theta_2 + \theta_3$ as expected for a planar arm.
 
 **Answer.** The end-effector is at $(x, y) = (1.43,\; 1.63)$ m with orientation $\phi = 45^\circ$.
 
@@ -417,7 +421,7 @@ T_3^0 = A_1 A_2 A_3 =
 T_2^0 = A_1 A_2 =
 \begin{bmatrix}
 c_{12} & -s_{12} & 0 & a_1 c_1 + a_2 c_{12} \\
-s_{12} & \phantom{-}c_{12} & 0 & a_1 s_1 + a_2 s_{12} \\
+s_{12} & c_{12} & 0 & a_1 s_1 + a_2 s_{12} \\
 0 & 0 & 1 & 0 \\
 0 & 0 & 0 & 1
 \end{bmatrix}
@@ -437,7 +441,7 @@ c_1 + 0.8\,c_{12} = 1.2, \qquad s_1 + 0.8\,s_{12} = 0.9
 
 4. **Solve for $\theta_1$,** one value for each sign of $\theta_2$:
 
-   $\theta_1 = \operatorname{atan2}(y, x) - \operatorname{atan2}(a_2 \sin\theta_2,\; a_1 + a_2\cos\theta_2) = 36.9^\circ \mp 29.5^\circ$
+   $\theta_1 = \mathrm{atan2}(y, x) - \mathrm{atan2}(a_2 \sin\theta_2,\; a_1 + a_2\cos\theta_2) = 36.9^\circ \mp 29.5^\circ$
 
 5. **Check.** Substituting either pair back into the last column of $T_2^0$ returns $(1.2,\; 0.9)$.
 
@@ -471,7 +475,7 @@ c_1 + 0.8\,c_{12} = 1.2, \qquad s_1 + 0.8\,s_{12} = 0.9
 T_1^0 = A_1 =
 \begin{bmatrix}
 0.866 & -0.500 & 0 & 0.866 \\
-0.500 & \phantom{-}0.866 & 0 & 0.500 \\
+0.500 & 0.866 & 0 & 0.500 \\
 0 & 0 & 1 & 0 \\
 0 & 0 & 0 & 1
 \end{bmatrix}
@@ -479,9 +483,9 @@ T_1^0 = A_1 =
 T_2^0 = A_1 A_2 =
 \begin{bmatrix}
 0 & -1 & 0 & 0.866 \\
-1 & \phantom{-}0 & 0 & 1.300 \\
-0 & \phantom{-}0 & 1 & 0 \\
-0 & \phantom{-}0 & 0 & 1
+1 & 0 & 0 & 1.300 \\
+0 & 0 & 1 & 0 \\
+0 & 0 & 0 & 1
 \end{bmatrix}
 ```
 
@@ -490,7 +494,7 @@ T_2^0 = A_1 A_2 =
 3. **Build the columns.** For a revolute joint, column $i$ is $z_{i-1} \times (p_2 - p_{i-1})$:
 
 ```math
-J_1 = z_0 \times (p_2 - p_0) = \begin{bmatrix} -1.300 \\ \phantom{-}0.866 \\ 0 \end{bmatrix}
+J_1 = z_0 \times (p_2 - p_0) = \begin{bmatrix} -1.300 \\ 0.866 \\ 0 \end{bmatrix}
 \qquad
 J_2 = z_1 \times (p_2 - p_1) = \begin{bmatrix} -0.800 \\ 0 \\ 0 \end{bmatrix}
 ```
@@ -501,7 +505,7 @@ J_2 = z_1 \times (p_2 - p_1) = \begin{bmatrix} -0.800 \\ 0 \\ 0 \end{bmatrix}
 J =
 \begin{bmatrix}
 -1.300 & -0.800 \\
-\phantom{-}0.866 & \phantom{-}0
+0.866 & 0
 \end{bmatrix}
 ```
 
@@ -540,7 +544,7 @@ v = J\,\dot\theta = 0.5 \begin{bmatrix} -1.300 \\ 0.866 \end{bmatrix} - 1.0 \beg
 ```math
 A_1 =
 \begin{bmatrix}
-0.866 & 0 & \phantom{-}0.500 & 0 \\
+0.866 & 0 & 0.500 & 0 \\
 0.500 & 0 & -0.866 & 0 \\
 0 & 1 & 0 & 0.4 \\
 0 & 0 & 0 & 1
@@ -549,17 +553,17 @@ A_1 =
 A_2 =
 \begin{bmatrix}
 0.500 & -0.866 & 0 & 0.250 \\
-0.866 & \phantom{-}0.500 & 0 & 0.433 \\
+0.866 & 0.500 & 0 & 0.433 \\
 0 & 0 & 1 & 0 \\
 0 & 0 & 0 & 1
 \end{bmatrix}
 \quad
 A_3 =
 \begin{bmatrix}
-\phantom{-}0 & 1 & 0 & \phantom{-}0 \\
+0 & 1 & 0 & 0 \\
 -1 & 0 & 0 & -0.4 \\
-\phantom{-}0 & 0 & 1 & \phantom{-}0 \\
-\phantom{-}0 & 0 & 0 & \phantom{-}1
+0 & 0 & 1 & 0 \\
+0 & 0 & 0 & 1
 \end{bmatrix}
 ```
 
@@ -568,16 +572,16 @@ A_3 =
 ```math
 T_2^0 = A_1 A_2 =
 \begin{bmatrix}
-0.433 & -0.750 & \phantom{-}0.500 & 0.217 \\
+0.433 & -0.750 & 0.500 & 0.217 \\
 0.250 & -0.433 & -0.866 & 0.125 \\
-0.866 & \phantom{-}0.500 & 0 & 0.833 \\
+0.866 & 0.500 & 0 & 0.833 \\
 0 & 0 & 0 & 1
 \end{bmatrix}
 \qquad
 T_3^0 = A_1 A_2 A_3 =
 \begin{bmatrix}
-\phantom{-}0.750 & 0.433 & \phantom{-}0.500 & 0.517 \\
-\phantom{-}0.433 & 0.250 & -0.866 & 0.298 \\
+0.750 & 0.433 & 0.500 & 0.517 \\
+0.433 & 0.250 & -0.866 & 0.298 \\
 -0.500 & 0.866 & 0 & 0.633 \\
 0 & 0 & 0 & 1
 \end{bmatrix}
@@ -591,8 +595,8 @@ T_3^0 = A_1 A_2 A_3 =
 J =
 \begin{bmatrix}
 -0.298 & -0.202 & 0.173 \\
-\phantom{-}0.517 & -0.117 & 0.100 \\
-0 & \phantom{-}0.596 & 0.346
+0.517 & -0.117 & 0.100 \\
+0 & 0.596 & 0.346
 \end{bmatrix}
 ```
 
@@ -602,10 +606,10 @@ J =
 v = J\,\dot\theta =
 \begin{bmatrix}
 -0.298 & -0.202 & 0.173 \\
-\phantom{-}0.517 & -0.117 & 0.100 \\
-0 & \phantom{-}0.596 & 0.346
+0.517 & -0.117 & 0.100 \\
+0 & 0.596 & 0.346
 \end{bmatrix}
-\begin{bmatrix} \phantom{-}0.5 \\ -0.4 \\ \phantom{-}0.8 \end{bmatrix}
+\begin{bmatrix} 0.5 \\ -0.4 \\ 0.8 \end{bmatrix}
 =
 \begin{bmatrix} 0.070 \\ 0.385 \\ 0.039 \end{bmatrix} \ \text{m/s}
 ```
