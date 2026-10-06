@@ -10,6 +10,7 @@ import sys
 import matplotlib
 
 matplotlib.use("Agg")
+import matplotlib.patches
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import font_manager
@@ -641,6 +642,88 @@ example_spatial.frames = 340
 example_spatial.is3d = True
 
 
+# 14 ---------------------------------------------- teaser banner
+def teaser(fig, i, st):
+    L = np.array([1.0, 1.0])
+    n = teaser.frames
+    if "q" not in st:
+        s = 2 * np.pi * np.arange(n) / n
+        st["p"] = np.c_[1.05 + 0.55 * np.cos(s), 0.55 + 0.45 * np.sin(2 * s)]
+        st["q"] = np.array([ik2(1, 1, pt, 1.0) for pt in st["p"]])
+    p, q = st["p"], st["q"]
+    qdeg = np.degrees(q)
+    j = (i + 1) % n
+    fig.clf()
+    fig.patch.set_facecolor(SURFACE)
+    tail = [(i - k) % n for k in range(40, -1, -1)]
+
+    def panel(rect, title, xl, yl, xlab, ylab):
+        a = fig.add_axes(rect)
+        a.set_facecolor(SURFACE)
+        a.set_xlim(*xl)
+        a.set_ylim(*yl)
+        a.set_xticks([])
+        a.set_yticks([])
+        for sp in a.spines.values():
+            sp.set_color(GRID)
+            sp.set_linewidth(1.5)
+        a.set_xlabel(xlab, color=INK2, fontsize=11, labelpad=4)
+        a.set_ylabel(ylab, color=INK2, fontsize=11, labelpad=4, rotation=0, ha="right", va="center")
+        fig.text(rect[0], rect[1] + rect[3] + 0.035, title, fontsize=14, fontweight="bold", color=INK, va="bottom")
+        return a
+
+    # joint space
+    lo, hi = qdeg.min(0), qdeg.max(0)
+    pad = 0.18 * (hi - lo)
+    a = panel([0.065, 0.2, 0.2, 0.52], "Joint space", (lo[0] - pad[0], hi[0] + pad[0]), (lo[1] - pad[1], hi[1] + pad[1]), "θ1", "θ2")
+    a.plot(np.r_[qdeg[:, 0], qdeg[0, 0]], np.r_[qdeg[:, 1], qdeg[0, 1]], color=GRID, lw=3)
+    a.plot(qdeg[tail, 0], qdeg[tail, 1], color=BLUE_LIGHT, lw=3, solid_capstyle="round")
+    dq = (qdeg[j] - qdeg[i]) * 12
+    a.annotate("", xy=qdeg[i] + dq, xytext=qdeg[i], arrowprops=dict(arrowstyle="-|>", color=BLUE, lw=2.2, mutation_scale=14, shrinkA=0, shrinkB=0))
+    a.scatter(*qdeg[i], s=90, color=BLUE, edgecolor=SURFACE, linewidth=2, zorder=5)
+    # arm
+    c = fig.add_axes([0.335, 0.08, 0.33, 0.74])
+    c.set_facecolor(SURFACE)
+    c.set_xlim(-0.75, 2.25)
+    c.set_ylim(-0.55, 1.55)
+    c.set_aspect("equal")
+    c.axis("off")
+    ground(c, 0, -0.12)
+    c.plot(np.r_[p[:, 0], p[0, 0]], np.r_[p[:, 1], p[0, 1]], color=GRID, lw=3, zorder=1)
+    P = fk(L, q[i])
+    arm(c, P, lw=8)
+    c.scatter(P[:2, 0], P[:2, 1], s=80, color=SURFACE, edgecolor=BLUE, linewidth=2.5, zorder=7)
+    tip(c, P[-1], color=ORANGE)
+    # task space
+    b = panel([0.745, 0.2, 0.2, 0.52], "Task space", (0.25, 1.85), (-0.2, 1.3), "x", "y")
+    b.plot(np.r_[p[:, 0], p[0, 0]], np.r_[p[:, 1], p[0, 1]], color=GRID, lw=3)
+    b.plot(p[tail, 0], p[tail, 1], color="#f5b79d", lw=3, solid_capstyle="round")
+    dp = (p[j] - p[i]) * 12
+    b.annotate("", xy=p[i] + dp, xytext=p[i], arrowprops=dict(arrowstyle="-|>", color=ORANGE, lw=2.2, mutation_scale=14, shrinkA=0, shrinkB=0))
+    b.scatter(*p[i], s=90, color=ORANGE, edgecolor=SURFACE, linewidth=2, zorder=5)
+    # mapping arrows across the banner
+    ar = dict(arrowstyle="-|>", color=INK2, lw=1.8, mutation_scale=16)
+    fig.add_artist(matplotlib.patches.FancyArrowPatch((0.285, 0.60), (0.345, 0.60), transform=fig.transFigure, **ar))
+    fig.add_artist(matplotlib.patches.FancyArrowPatch((0.655, 0.60), (0.715, 0.60), transform=fig.transFigure, **ar))
+    fig.add_artist(matplotlib.patches.FancyArrowPatch((0.715, 0.34), (0.655, 0.34), transform=fig.transFigure, **ar))
+    fig.add_artist(matplotlib.patches.FancyArrowPatch((0.345, 0.34), (0.285, 0.34), transform=fig.transFigure, **ar))
+    fig.text(0.5, 0.93, "Forward kinematics   x = f(q)", ha="center", va="center", fontsize=13, color=INK, fontweight="bold")
+    fig.text(0.5, 0.055, "Inverse kinematics   q = f⁻¹(x)", ha="center", va="center", fontsize=13, color=INK, fontweight="bold")
+    fig.text(0.315, 0.665, "FK", ha="center", fontsize=10.5, color=INK2)
+    fig.text(0.685, 0.665, "FK", ha="center", fontsize=10.5, color=INK2)
+    fig.text(0.315, 0.255, "IK", ha="center", fontsize=10.5, color=INK2)
+    fig.text(0.685, 0.255, "IK", ha="center", fontsize=10.5, color=INK2)
+    fig.text(0.165, 0.045, "joint velocity  q̇", ha="center", fontsize=10.5, color=BLUE)
+    fig.text(0.845, 0.045, "tip velocity  ẋ = J(q) q̇", ha="center", fontsize=10.5, color=ORANGE)
+
+
+teaser.frames = 160
+teaser.wholefig = True
+teaser.figsize = (12.0, 4.4)
+teaser.gif_width = 1000
+teaser.still = 22
+
+
 ANIMS = {
     "forward_kinematics": forward_kinematics,
     "inverse_kinematics": inverse_kinematics,
@@ -655,12 +738,15 @@ ANIMS = {
     "example_inverse_kinematics": example_ik,
     "example_jacobian": example_jacobian,
     "example_spatial_arm": example_spatial,
+    "teaser": teaser,
 }
 
 
 def render(name, fn, preview=False):
-    fig = plt.figure(figsize=(7.2, 5.4), dpi=100, facecolor=SURFACE)
-    if getattr(fn, "is3d", False):
+    fig = plt.figure(figsize=getattr(fn, "figsize", (7.2, 5.4)), dpi=100, facecolor=SURFACE)
+    if getattr(fn, "wholefig", False):
+        ax = fig
+    elif getattr(fn, "is3d", False):
         ax = fig.add_axes([0.36, 0.0, 0.66, 0.86], projection="3d")
     else:
         ax = fig.add_axes([0.03, 0.02, 0.94, 0.82])
@@ -679,9 +765,11 @@ def render(name, fn, preview=False):
         for i in range(n):
             fn(ax, i, st)
             w.grab_frame(facecolor=SURFACE)
+            if i == getattr(fn, "still", -1):
+                fig.savefig(os.path.join(OUT, name + ".png"), dpi=150, facecolor=SURFACE)
     plt.close(fig)
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", mp4, "-vf",
-                    "fps=20,scale=640:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=64[p];[b][p]paletteuse=dither=none",
+                    "fps=20,scale=%d:-1:flags=lanczos," % getattr(fn, "gif_width", 640) + "split[a][b];[a]palettegen=max_colors=64[p];[b][p]paletteuse=dither=none",
                     "-loop", "0", os.path.join(OUT, name + ".gif")], check=True)
 
 
