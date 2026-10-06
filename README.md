@@ -145,12 +145,16 @@ T_n^0(q) = A_1(q_1) \, A_2(q_2) \cdots A_n(q_n)
 
 **The Denavit-Hartenberg convention.** Each link transform $A_i$ is described by four parameters, one of which is the joint variable:
 
+<div align="center">
+
 | Parameter | Symbol | Meaning | Joint variable when |
-|-----------|--------|---------|---------------------|
+|:---------:|:------:|:-------:|:-------------------:|
 | Joint&nbsp;angle | $\theta_i$ | Rotation about $z_{i-1}$ | The joint is revolute |
 | Link&nbsp;offset | $d_i$ | Translation along $z_{i-1}$ | The joint is prismatic |
 | Link&nbsp;length | $a_i$ | Translation along $x_i$ | Never (fixed by the design) |
 | Link&nbsp;twist | $\alpha_i$ | Rotation about $x_i$ | Never (fixed by the design) |
+
+</div>
 
 In the standard (distal) convention these four motions are applied in the order $\mathrm{Rot}_z(\theta_i)$, $\mathrm{Trans}_z(d_i)$, $\mathrm{Trans}_x(a_i)$, $\mathrm{Rot}_x(\alpha_i)$, which multiplies out to
 
