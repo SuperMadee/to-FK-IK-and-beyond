@@ -4,7 +4,7 @@
 
 **From Joint Angles to Task Space (and the Math in Between)**
 
-[![Papers](https://img.shields.io/badge/Papers-130+-blue)](#-paper-collection)
+[![Papers](https://img.shields.io/badge/Papers-120+-blue)](#-paper-collection)
 [![Benchmarks](https://img.shields.io/badge/Benchmarks-10+-green)](#-benchmarks--evaluation)
 [![Frameworks](https://img.shields.io/badge/Frameworks-30+-orange)](#-open-source-frameworks)
 [![References](https://img.shields.io/badge/References-25+-purple)](#-references)
@@ -21,6 +21,8 @@
 
 - [Introduction](#-introduction)
 - [What is Robot Kinematics?](#-what-is-robot-kinematics)
+  - [Forward Kinematics](#forward-kinematics)
+  - [Inverse Kinematics](#inverse-kinematics)
   - [The Jacobian Matrix](#the-jacobian-matrix)
 - [Unified Taxonomy](#-unified-taxonomy)
   - [Mechanisms](#-mechanisms-what-is-moving)
@@ -74,7 +76,7 @@ Kinematics is the layer every other part of the stack stands on. Motion planners
 
 This repository collects robot kinematics research, featuring:
 
-- **130+ papers** spanning from foundational works (Denavit-Hartenberg, 1955; Pieper, 1968; Whitney, 1969) to GPU-batched and generative inverse kinematics (2025)
+- **120+ papers** spanning from foundational works (Denavit-Hartenberg, 1955; Pieper, 1968; Whitney, 1969) to GPU-batched and generative inverse kinematics (2025)
 - **Unified taxonomy** organizing research by Mechanisms × Representations × Problems
 - **Task and strength guide** that maps jobs (closed-form IK, redundancy resolution, whole-body control, calibration, …) to the methods best suited to them
 - **10+ robot model collections, motion datasets, standards, and evaluation tools** (MuJoCo Menagerie, robot_descriptions, AMASS, ISO 9283, etc.)
@@ -113,31 +115,134 @@ Kinematics is distinct from related concepts:
 | **State Estimation** | Inferring configuration or pose from sensors | Uses kinematic models as measurement or motion models |
 | **Kinematics** | The geometry of motion: position, velocity, and acceleration relationships | No forces, no masses; purely how joint motion maps to body motion |
 
-### The Kinematics Problem in Three Equations
+### The Kinematics Problem at a Glance
 
-For a robot with joint configuration $q \in \mathbb{R}^n$, **forward kinematics** gives the end-effector pose as a product of joint motions. In the product-of-exponentials form, with joint screw axes $\mathcal{S}_i$ and home pose $M$:
+A robot lives in two spaces at once. **Joint space** is the set of joint values $q \in \mathbb{R}^n$ that the motors control. **Task space** is where the work happens: the pose $x$ of the end-effector, with $m$ coordinates (up to six in 3D). Kinematics is the study of the map between the two, and it comes down to three questions:
 
-$$
-T(q) = e^{[\mathcal{S}_1] q_1} \, e^{[\mathcal{S}_2] q_2} \cdots e^{[\mathcal{S}_n] q_n} \, M \;\in SE(3)
-$$
+| Question | Given | Find | Relation | Character |
+|----------|-------|------|----------|-----------|
+| **Forward kinematics** | Joint values $q$ | Pose $x$ | $x = f(q)$ | One answer, computed directly |
+| **Inverse kinematics** | Desired pose $x_d$ | Joint values $q$ | $f(q) = x_d$ | Zero, several, or infinitely many answers |
+| **Differential kinematics** | Joint velocities $\dot{q}$ | End-effector velocity $\dot{x}$ | $\dot{x} = J(q) \dot{q}$ | Linear at each configuration |
 
-**Differential kinematics** linearizes this map. The Jacobian $J(q)$ relates joint velocities to the end-effector twist $\mathcal{V}$:
+Almost every method in this repository is a choice of *which mechanism defines* $f$, *how pose and its error are represented*, and *how the inverse or differential problem is solved*. The next three sections take the questions one at a time.
 
-$$
-\mathcal{V} = J(q)\, \dot{q}
-$$
+### Forward Kinematics
 
-**Inverse kinematics** runs the map backward, usually as a constrained optimization toward a target pose $T_d$:
+**Forward kinematics** answers "given the joint values, where is the end-effector?" For a serial chain the answer always exists, is unique, and is computed by multiplying one transform per joint.
 
-$$
-q^{\star} = \arg\min_{q} \; \lVert \log\!\left( T(q)^{-1} T_d \right) \rVert^{2} \quad \text{s.t.} \quad q_{\min} \le q \le q_{\max}
-$$
+**Poses as matrices.** The pose of a frame is written as a $4 \times 4$ homogeneous transformation that stacks a rotation matrix $R$ and a position vector $p$:
 
-Almost every method in this repository is a choice of *which mechanism defines* $T(q)$, *how pose and its error are represented*, and *how the inverse or differential problem is solved*.
+```math
+T = \begin{bmatrix} R & p \\ 0 & 1 \end{bmatrix} \in SE(3), \qquad R \in SO(3), \quad p \in \mathbb{R}^3
+```
+
+Attaching one frame to each link and chaining the transforms between neighbors gives the forward kinematics of an $n$-joint arm:
+
+```math
+T_n^0(q) = A_1(q_1) \, A_2(q_2) \cdots A_n(q_n)
+```
+
+**The Denavit-Hartenberg convention.** Each link transform $A_i$ is described by four parameters, one of which is the joint variable:
+
+| Parameter | Symbol | Meaning | Joint variable when |
+|-----------|--------|---------|---------------------|
+| Joint angle | $\theta_i$ | Rotation about $z_{i-1}$ | The joint is revolute |
+| Link offset | $d_i$ | Translation along $z_{i-1}$ | The joint is prismatic |
+| Link length | $a_i$ | Translation along $x_i$ | Never (fixed by the design) |
+| Link twist | $\alpha_i$ | Rotation about $x_i$ | Never (fixed by the design) |
+
+In the standard (distal) convention these four motions are applied in the order $\mathrm{Rot}_z(\theta_i)$, $\mathrm{Trans}_z(d_i)$, $\mathrm{Trans}_x(a_i)$, $\mathrm{Rot}_x(\alpha_i)$, which multiplies out to
+
+```math
+A_i =
+\begin{bmatrix}
+\cos\theta_i & -\sin\theta_i\cos\alpha_i & \sin\theta_i\sin\alpha_i & a_i\cos\theta_i \\
+\sin\theta_i & \cos\theta_i\cos\alpha_i & -\cos\theta_i\sin\alpha_i & a_i\sin\theta_i \\
+0 & \sin\alpha_i & \cos\alpha_i & d_i \\
+0 & 0 & 0 & 1
+\end{bmatrix}
+```
+
+**The product-of-exponentials alternative.** The same map can be written without link frames. Each joint is described by its screw axis $\mathcal{S}_i$ in the base frame, and $M$ is the end-effector pose when all joints are at zero:
+
+```math
+T(q) = e^{[\mathcal{S}_1] q_1} \, e^{[\mathcal{S}_2] q_2} \cdots e^{[\mathcal{S}_n] q_n} \, M
+```
+
+**Example: planar 2R arm.** With link lengths $l_1, l_2$ and the shorthand $c_1 = \cos\theta_1$, $s_{12} = \sin(\theta_1 + \theta_2)$, multiplying the two link transforms gives
+
+```math
+x = l_1 c_1 + l_2 c_{12}, \qquad y = l_1 s_1 + l_2 s_{12}, \qquad \phi = \theta_1 + \theta_2
+```
+
+<p align="center">
+  <img src="figures/forward_kinematics.gif" alt="Animation of a three-joint planar arm whose end-effector position is computed from its joint angles" width="600">
+</p>
+
+| Mechanism | Forward Kinematics | Why |
+|-----------|--------------------|-----|
+| **Serial chain** | Direct and unique | A product of link transforms |
+| **Parallel mechanism** | Hard, with several solutions (up to 40 for a general Gough-Stewart platform) | The loop-closure equations must be solved |
+| **Wheeled robot** | Requires integrating velocities over time | Rolling constraints are nonholonomic |
+| **Continuum robot** | Requires a shape model | There are no discrete joints |
+
+This section follows Siciliano et al. (Chapter 2) and Spong, Hutchinson, and Vidyasagar for the Denavit-Hartenberg form, and Lynch and Park (Chapter 4) for the product of exponentials. A fully worked case is in [Solved Problem 1](#-solved-problem-1-forward-kinematics), and papers are collected under [Forward Kinematics & Modeling](#-forward-kinematics--modeling).
+
+### Inverse Kinematics
+
+**Inverse kinematics** answers the opposite question: "which joint values put the end-effector at a desired pose $T_d$?" It means solving
+
+```math
+T_n^0(q) = T_d
+```
+
+for $q$. The equations are nonlinear in the joint angles, so three things that are trivial for forward kinematics become real questions: whether a solution exists, how many there are, and how to compute them.
+
+| Situation | Number of Solutions | Example |
+|-----------|---------------------|---------|
+| Target outside the workspace | None | A point farther than the arm can reach |
+| Non-redundant arm ($n = m$) | Finite | 2 for a planar 2R arm; up to 8 for a 6R arm with a spherical wrist; up to 16 for a general 6R arm |
+| Redundant arm ($n > m$) | Infinitely many | A 7-joint arm can move its elbow while the hand stays fixed |
+| At a singularity | Solutions merge or become infinite | A planar 2R arm stretched straight |
+
+**Closed-form solution.** When the geometry allows it, the equations are solved by algebra or trigonometry. For the planar 2R arm, squaring and adding the two position equations eliminates $\theta_1$:
+
+```math
+\cos\theta_2 = \frac{x^2 + y^2 - l_1^2 - l_2^2}{2 l_1 l_2}, \qquad \theta_2 = \pm \arccos(\cdot)
+```
+
+```math
+\theta_1 = \mathrm{atan2}(y, x) - \mathrm{atan2}(l_2 \sin\theta_2, \; l_1 + l_2 \cos\theta_2)
+```
+
+The two signs of $\theta_2$ are the elbow-down and elbow-up solutions. For 6-joint arms, a closed form is guaranteed when three consecutive joint axes intersect at a point (Pieper's condition, met by a spherical wrist), because the problem then splits into a position problem for the first three joints and an orientation problem for the last three.
+
+<p align="center">
+  <img src="figures/inverse_kinematics.gif" alt="Animation of a two-joint arm reaching a moving target with both its elbow-up and elbow-down solutions" width="600">
+</p>
+
+**Numerical solution.** For any other arm, start from a guess and repeatedly correct it using the pose error $e$ and the Jacobian $J$ (introduced in the next section). The Newton-Raphson step and its damped least squares variant, which stays well behaved near singularities, are
+
+```math
+q_{k+1} = q_k + J^{+}(q_k) \, e_k
+\qquad \text{and} \qquad
+q_{k+1} = q_k + J^{\top} \left( J J^{\top} + \lambda^2 I \right)^{-1} e_k
+```
+
+**Optimization form.** Joint limits, collisions, and secondary goals are handled by posing inverse kinematics as a constrained minimization of the pose error:
+
+```math
+q^{\star} = \arg\min_{q} \; \lVert \log \left( T(q)^{-1} T_d \right) \rVert^{2} \quad \text{s.t.} \quad q_{\min} \le q \le q_{\max}
+```
+
+The trade-offs between closed-form, numerical, optimization-based, sampling, and learned solvers are compared in [Problems](#-problems-what-is-being-solved).
+
+This section follows Siciliano et al. (Chapter 2) and Lynch and Park (Chapter 6); the damped least squares step is due to Wampler and to Nakamura and Hanafusa. A fully worked case is in [Solved Problem 2](#-solved-problem-2-inverse-kinematics), and papers are collected under [Inverse Kinematics](#-inverse-kinematics).
 
 ### The Jacobian Matrix
 
-The **Jacobian** is the matrix of partial derivatives of the forward kinematics map $x = f(q)$. It has one row per task coordinate and one column per joint:
+**Differential kinematics** answers the third question: "how fast does the end-effector move when the joints move?" The answer is carried by one matrix. The **Jacobian** is the matrix of partial derivatives of the forward kinematics map $x = f(q)$. It has one row per task coordinate and one column per joint:
 
 ```math
 J(q) = \frac{\partial f}{\partial q} =
@@ -179,12 +284,12 @@ so the arm is singular exactly when $\theta_2 = 0$ or $\theta_2 = \pi$, that is,
 
 | Use | Relation | What It Gives |
 |-----|----------|---------------|
-| **Velocity mapping** | $\dot{x} = J(q)\,\dot{q}$ | End-effector velocity from joint velocities |
+| **Velocity mapping** | $\dot{x} = J(q) \dot{q}$ | End-effector velocity from joint velocities |
 | **Statics** | $\tau = J(q)^{\top} F$ | Joint torques that balance an end-effector force |
-| **Singularity detection** | $\mathrm{rank}\, J(q) < \min(m, n)$ | Configurations where the Jacobian loses rank and some task direction cannot be produced |
+| **Singularity detection** | $\mathrm{rank} J(q) < \min(m, n)$ | Configurations where the Jacobian loses rank and some task direction cannot be produced |
 | **Numerical inverse kinematics** | $\Delta q = J^{+} e$ | A joint step that reduces the pose error $e$ |
 | **Manipulability** | $w = \sqrt{\det(J J^{\top})}$ | A scalar measure of distance from singularity |
-| **Redundancy resolution** | $\dot{q} = J^{+}\dot{x} + (I - J^{+}J)\,\dot{q}_0$ | Secondary motion that does not disturb the task |
+| **Redundancy resolution** | $\dot{q} = J^{+}\dot{x} + (I - J^{+}J) \dot{q}_0$ | Secondary motion that does not disturb the task |
 
 These relations are standard and follow Siciliano et al. (Chapter 3) and Lynch and Park (Chapters 5 and 6); the manipulability measure is Yoshikawa's.
 
@@ -318,7 +423,7 @@ The classic problems share one model and differ in what is known and what is ask
 
 Four solved problems, each starting from a Denavit-Hartenberg table and worked with homogeneous transformation matrices: one for each of the core questions on a planar arm, then a spatial arm solved end to end. Each has the full written solution and an animation that walks through the same steps.
 
-> 📚 **Conventions and sources.** The link transform $A_i$ is the standard (distal) Denavit-Hartenberg convention, $A_i = \mathrm{Rot}_z(\theta_i)\,\mathrm{Trans}_z(d_i)\,\mathrm{Trans}_x(a_i)\,\mathrm{Rot}_x(\alpha_i)$, as used by Spong, Hutchinson, and Vidyasagar and by Siciliano et al. (Chapter 2). The Jacobian column formula $z_{i-1} \times (p_e - p_{i-1})$ is the geometric Jacobian of Siciliano et al. (Chapter 3). Craig's textbook uses the modified (proximal) convention, so its tables and matrices for the same arm look different while the final pose is the same. Full citations are in [References](#-references).
+> 📚 **Conventions and sources.** All four problems use the standard (distal) Denavit-Hartenberg convention defined in [Forward Kinematics](#forward-kinematics) and the geometric Jacobian defined in [The Jacobian Matrix](#the-jacobian-matrix). Craig's textbook uses the modified (proximal) convention, so its tables and matrices for the same arm look different while the final pose is the same.
 
 ---
 
@@ -338,17 +443,7 @@ Four solved problems, each starting from a Denavit-Hartenberg table and worked w
 
 **Solution.**
 
-1. **Write one transform per row of the table.** In the standard Denavit-Hartenberg convention, the transform from frame $i-1$ to frame $i$ is
-
-```math
-A_i =
-\begin{bmatrix}
-\cos\theta_i & -\sin\theta_i\cos\alpha_i & \sin\theta_i\sin\alpha_i & a_i\cos\theta_i \\
-\sin\theta_i & \cos\theta_i\cos\alpha_i & -\cos\theta_i\sin\alpha_i & a_i\sin\theta_i \\
-0 & \sin\alpha_i & \cos\alpha_i & d_i \\
-0 & 0 & 0 & 1
-\end{bmatrix}
-```
+1. **Write one transform per row of the table,** using the link transform $A_i$ from [Forward Kinematics](#forward-kinematics).
 
    Every row here has $\alpha_i = 0$ and $d_i = 0$, so each $A_i$ is a rotation about $z$ by $\theta_i$ followed by a shift of $a_i$ along the new $x$ axis:
 
@@ -398,15 +493,15 @@ T_3^0 = A_1 A_2 A_3 =
 \end{bmatrix}
 ```
 
-3. **Read off the pose.** The last column of $T_3^0$ is the position. The rotation block is a rotation about $z$ by $\mathrm{atan2}(0.707,\; 0.707) = 45^\circ$, which equals $\theta_1 + \theta_2 + \theta_3$ as expected for a planar arm.
+3. **Read off the pose.** The last column of $T_3^0$ is the position. The rotation block is a rotation about $z$ by $\mathrm{atan2}(0.707, 0.707) = 45^\circ$, which equals $\theta_1 + \theta_2 + \theta_3$ as expected for a planar arm.
 
-**Answer.** The end-effector is at $(x, y) = (1.43,\; 1.63)$ m with orientation $\phi = 45^\circ$.
+**Answer.** The end-effector is at $(x, y) = (1.43, 1.63)$ m with orientation $\phi = 45^\circ$.
 
 ---
 
 ### 🔙 Solved Problem 2: Inverse Kinematics
 
-> **Problem.** A planar 2R arm is described by the Denavit-Hartenberg table below, with lengths in meters. Find all joint angles $\theta_1, \theta_2$ that place the end-effector at $(x, y) = (1.2,\; 0.9)$ m.
+> **Problem.** A planar 2R arm is described by the Denavit-Hartenberg table below, with lengths in meters. Find all joint angles $\theta_1, \theta_2$ that place the end-effector at $(x, y) = (1.2, 0.9)$ m.
 
 | Joint $i$ | $\theta_i$ | $d_i$ | $a_i$ | $\alpha_i$ |
 |-----------|-----------|-------|-------|-----------|
@@ -439,15 +534,15 @@ c_1 + 0.8\,c_{12} = 1.2, \qquad s_1 + 0.8\,s_{12} = 0.9
 
 3. **Eliminate $\theta_1$.** Squaring and adding the two equations leaves only $\theta_2$:
 
-   $x^2 + y^2 = a_1^2 + a_2^2 + 2 a_1 a_2 \cos\theta_2 \;\Rightarrow\; \cos\theta_2 = \dfrac{2.25 - 1 - 0.64}{1.6} = 0.381 \;\Rightarrow\; \theta_2 = \pm 67.6^\circ$
+   $x^2 + y^2 = a_1^2 + a_2^2 + 2 a_1 a_2 \cos\theta_2 \Rightarrow \cos\theta_2 = \dfrac{2.25 - 1 - 0.64}{1.6} = 0.381 \Rightarrow \theta_2 = \pm 67.6^\circ$
 
    Geometrically, the elbow lies where a circle of radius $a_1$ about the base meets a circle of radius $a_2$ about the target, and the two intersections are the two signs.
 
 4. **Solve for $\theta_1$,** one value for each sign of $\theta_2$:
 
-   $\theta_1 = \mathrm{atan2}(y, x) - \mathrm{atan2}(a_2 \sin\theta_2,\; a_1 + a_2\cos\theta_2) = 36.9^\circ \mp 29.5^\circ$
+   $\theta_1 = \mathrm{atan2}(y, x) - \mathrm{atan2}(a_2 \sin\theta_2, a_1 + a_2\cos\theta_2) = 36.9^\circ \mp 29.5^\circ$
 
-5. **Check.** Substituting either pair back into the last column of $T_2^0$ returns $(1.2,\; 0.9)$.
+5. **Check.** Substituting either pair back into the last column of $T_2^0$ returns $(1.2, 0.9)$.
 
 **Answer.**
 
@@ -460,7 +555,7 @@ c_1 + 0.8\,c_{12} = 1.2, \qquad s_1 + 0.8\,s_{12} = 0.9
 
 ### 📈 Solved Problem 3: The Jacobian Matrix
 
-> **Problem.** The 2R arm of Problem 2 is at the configuration in the table below and its joints turn at $\dot\theta = (0.5,\; -1.0)$ rad/s. Find the Jacobian, the end-effector velocity, and whether the arm is at a singularity.
+> **Problem.** The 2R arm of Problem 2 is at the configuration in the table below and its joints turn at $\dot\theta = (0.5, -1.0)$ rad/s. Find the Jacobian, the end-effector velocity, and whether the arm is at a singularity.
 
 | Joint $i$ | $\theta_i$ | $d_i$ | $a_i$ | $\alpha_i$ |
 |-----------|-----------|-------|-------|-----------|
@@ -493,7 +588,7 @@ T_2^0 = A_1 A_2 =
 \end{bmatrix}
 ```
 
-2. **Read off the axes and origins.** The third column of each transform is the joint axis and the fourth is the frame origin: $z_0 = z_1 = (0, 0, 1)$, $p_0 = (0, 0, 0)$, $p_1 = (0.866,\; 0.5,\; 0)$, $p_2 = (0.866,\; 1.3,\; 0)$.
+2. **Read off the axes and origins.** The third column of each transform is the joint axis and the fourth is the frame origin: $z_0 = z_1 = (0, 0, 1)$, $p_0 = (0, 0, 0)$, $p_1 = (0.866, 0.5, 0)$, $p_2 = (0.866, 1.3, 0)$.
 
 3. **Build the columns.** For a revolute joint, column $i$ is $z_{i-1} \times (p_2 - p_{i-1})$:
 
@@ -521,13 +616,13 @@ v = J\,\dot\theta = 0.5 \begin{bmatrix} -1.300 \\ 0.866 \end{bmatrix} - 1.0 \beg
 
 5. **Check for singularity.** $\det J = (-1.3)(0) - (-0.8)(0.866) = 0.693 \ne 0$, which matches the closed form $a_1 a_2 \sin\theta_2$ from [The Jacobian Matrix](#the-jacobian-matrix).
 
-**Answer.** The end-effector moves at $v = (0.15,\; 0.43)$ m/s, a speed of $0.46$ m/s, and the arm is not at a singularity.
+**Answer.** The end-effector moves at $v = (0.15, 0.43)$ m/s, a speed of $0.46$ m/s, and the arm is not at a singularity.
 
 ---
 
 ### 🧮 Solved Problem 4: A Spatial Arm with Transformation Matrices
 
-> **Problem.** A spatial 3R arm (waist, shoulder, elbow) is described by the Denavit-Hartenberg table below, with lengths in meters. At $\theta = (30^\circ, 60^\circ, -90^\circ)$ and joint rates $\dot\theta = (0.5,\; -0.4,\; 0.8)$ rad/s, find (a) the pose of the tip frame, (b) the Jacobian for linear velocity, and (c) the tip velocity and whether the arm is at a singularity.
+> **Problem.** A spatial 3R arm (waist, shoulder, elbow) is described by the Denavit-Hartenberg table below, with lengths in meters. At $\theta = (30^\circ, 60^\circ, -90^\circ)$ and joint rates $\dot\theta = (0.5, -0.4, 0.8)$ rad/s, find (a) the pose of the tip frame, (b) the Jacobian for linear velocity, and (c) the tip velocity and whether the arm is at a singularity.
 
 | Joint $i$ | $\theta_i$ | $d_i$ | $a_i$ | $\alpha_i$ |
 |-----------|-----------|-------|-------|-----------|
@@ -541,7 +636,7 @@ v = J\,\dot\theta = 0.5 \begin{bmatrix} -1.300 \\ 0.866 \end{bmatrix} - 1.0 \beg
 
 **Solution.**
 
-1. **Write one transform per row of the table,** using the general matrix $A_i$ from Problem 1. Here the first row has $\alpha_1 = 90^\circ$ and $d_1 = 0.4$, which tips the shoulder axis sideways and lifts it off the floor, so the arm is no longer planar.
+1. **Write one transform per row of the table,** using the link transform $A_i$ from [Forward Kinematics](#forward-kinematics). Here the first row has $\alpha_1 = 90^\circ$ and $d_1 = 0.4$, which tips the shoulder axis sideways and lifts it off the floor, so the arm is no longer planar.
 
    Substituting each row of the table with the given angles:
 
@@ -591,9 +686,9 @@ T_3^0 = A_1 A_2 A_3 =
 \end{bmatrix}
 ```
 
-   The upper-left $3 \times 3$ block of $T_3^0$ is the orientation of the tip frame and the last column is its position, $p_3 = (0.517,\; 0.298,\; 0.633)$ m.
+   The upper-left $3 \times 3$ block of $T_3^0$ is the orientation of the tip frame and the last column is its position, $p_3 = (0.517, 0.298, 0.633)$ m.
 
-3. **Build the Jacobian from the same matrices.** For a revolute joint, column $i$ is $z_{i-1} \times (p_3 - p_{i-1})$, where $z_{i-1}$ is the third column and $p_{i-1}$ the fourth column of $T_{i-1}^0$. Reading them off: $z_0 = (0, 0, 1)$ and $p_0 = (0, 0, 0)$; $z_1 = z_2 = (0.500,\; -0.866,\; 0)$; $p_1 = (0,\; 0,\; 0.4)$; $p_2 = (0.217,\; 0.125,\; 0.833)$. The three cross products give
+3. **Build the Jacobian from the same matrices.** For a revolute joint, column $i$ is $z_{i-1} \times (p_3 - p_{i-1})$, where $z_{i-1}$ is the third column and $p_{i-1}$ the fourth column of $T_{i-1}^0$. Reading them off: $z_0 = (0, 0, 1)$ and $p_0 = (0, 0, 0)$; $z_1 = z_2 = (0.500, -0.866, 0)$; $p_1 = (0, 0, 0.4)$; $p_2 = (0.217, 0.125, 0.833)$. The three cross products give
 
 ```math
 J =
@@ -618,15 +713,15 @@ v = J\,\dot\theta =
 \begin{bmatrix} 0.070 \\ 0.385 \\ 0.039 \end{bmatrix} \ \text{m/s}
 ```
 
-5. **Check for singularity.** For this arm the determinant has the closed form $\det J = -a_2 a_3 \sin\theta_3 \,(a_2\cos\theta_2 + a_3\cos(\theta_2 + \theta_3))$, which evaluates to $0.119$. It vanishes when $\sin\theta_3 = 0$ (elbow stretched or folded) or when $a_2\cos\theta_2 + a_3\cos(\theta_2+\theta_3) = 0$ (tip on the waist axis). Neither holds here.
+5. **Check for singularity.** For this arm the determinant has the closed form $\det J = -a_2 a_3 \sin\theta_3 (a_2\cos\theta_2 + a_3\cos(\theta_2 + \theta_3))$, which evaluates to $0.119$. It vanishes when $\sin\theta_3 = 0$ (elbow stretched or folded) or when $a_2\cos\theta_2 + a_3\cos(\theta_2+\theta_3) = 0$ (tip on the waist axis). Neither holds here.
 
-**Answer.** (a) The tip is at $(0.517,\; 0.298,\; 0.633)$ m with the orientation given by the rotation block of $T_3^0$. (b) $J$ is the matrix in step 3. (c) The tip moves at $v = (0.070,\; 0.385,\; 0.039)$ m/s, a speed of $0.39$ m/s, and $\det J = 0.119 \ne 0$, so the arm is not at a singularity.
+**Answer.** (a) The tip is at $(0.517, 0.298, 0.633)$ m with the orientation given by the rotation block of $T_3^0$. (b) $J$ is the matrix in step 3. (c) The tip moves at $v = (0.070, 0.385, 0.039)$ m/s, a speed of $0.39$ m/s, and $\det J = 0.119 \ne 0$, so the arm is not at a singularity.
 
 ---
 
 ## 🏆 Methods by Task & Strength
 
-The taxonomy above describes how kinematics methods are *built*. This section classifies them by what they are *for* and what they are *good at*, so you can go from a job to a shortlist. Every method named here has an entry in the [Paper Collection](#-paper-collection) or [Open-Source Frameworks](#-open-source-frameworks).
+The taxonomy above describes how kinematics methods are *built*. This section classifies them by what they are *for* and what they are *good at*, so you can go from a job to a shortlist. Every method named here has an entry in the [Paper Collection](#-paper-collection), [Open-Source Frameworks](#-open-source-frameworks), or [References](#-references).
 
 > ℹ **How to read this.** Strengths reflect what each paper reports and how the method is commonly used in practice. They are not rankings from one unified benchmark, and results shift with the robot, joint limits, seeds, and tolerances. Always validate on your own robot.
 
@@ -700,13 +795,9 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 
 ### 📐 Forward Kinematics & Modeling
 
-> **Forward kinematics** maps joint values to the pose of every link, and **kinematic modeling** is the step that makes it possible by turning a physical mechanism into equations. The choice of convention decides how many parameters a robot has, whether they are identifiable, and how easily the Jacobian can be written down.
+> **Forward kinematics** maps joint values to the pose of every link, and **kinematic modeling** is the step that makes it possible by turning a physical mechanism into equations. The choice of convention decides how many parameters a robot has, whether they are identifiable, and how easily the Jacobian can be written down. The standard textbook treatments (Murray, Li, and Sastry; Lynch and Park) are listed under [References](#-references).
 >
 > For serial chains forward kinematics is a direct product of transforms, so the papers here are about how to write the model. Where it is a hard problem in its own right, see [Parallel & Closed-Chain Mechanisms](#-parallel--closed-chain-mechanisms) and [Continuum & Soft Robot Kinematics](#-continuum--soft-robot-kinematics).
-
-<p align="center">
-  <img src="figures/forward_kinematics.gif" alt="Animation of a three-joint planar arm whose end-effector position is computed from its joint angles" width="600">
-</p>
 
 | Paper | Year | Description | Links |
 |-------|------|-------------|-------|
@@ -715,8 +806,6 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 | Product of Exponentials | 1984 | Writes forward kinematics as a product of matrix exponentials of joint twists, removing the need for link frames. | [[Springer]](https://doi.org/10.1007/BFb0031048) |
 | Khalil-Kleinfinger Notation | 1986 | A modified geometric notation that handles open, tree-structured, and closed-loop robots with one consistent set of parameters. | [[ICRA]](https://doi.org/10.1109/ROBOT.1986.1087552) |
 | Computational Aspects of the POE Formula | 1994 | Analyzes the product-of-exponentials formula for efficient forward kinematics and Jacobian computation and compares it with Denavit-Hartenberg models. | [[TAC]](https://doi.org/10.1109/9.280779) |
-| A Mathematical Introduction to Robotic Manipulation | 1994 | The textbook that established screw theory and Lie groups as the working language of manipulator kinematics. | [[Book]](https://www.cds.caltech.edu/~murray/mlswiki/index.php/Main_Page) |
-| Modern Robotics | 2017 | Textbook and software library that teach kinematics entirely through screws and the product of exponentials. | [[Website]](http://modernrobotics.org) [[GitHub]](https://github.com/NxRLab/ModernRobotics) |
 
 ---
 
@@ -728,9 +817,7 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 |-------|------|-------------|-------|
 | A Survey of Attitude Representations | 1993 | Reference survey of rotation parameterizations (matrices, Euler angles, quaternions, Rodrigues parameters) and the relations between them. | [[JAS]](https://ui.adsabs.harvard.edu/abs/1993JAnSc..41..439S) |
 | Practical Parameterization of Rotations Using the Exponential Map | 1998 | Shows how to use the three-parameter exponential map robustly for inverse kinematics and optimization, including derivative computation near its singularities. | [[JGT]](https://doi.org/10.1080/10867651.1998.10487493) |
-| Hand-Eye Calibration Using Dual Quaternions | 1999 | Uses dual quaternions to solve rotation and translation simultaneously, a widely cited demonstration of the representation's value. | [[IJRR]](https://doi.org/10.1177/02783649922066213) |
 | Quaternion Kinematics for the Error-State Kalman Filter | 2017 | Self-contained reference on quaternion conventions, perturbations, derivatives, and integration. | [[arXiv]](https://arxiv.org/abs/1711.02508) |
-| A Micro Lie Theory for State Estimation in Robotics | 2018 | Compact tutorial on the Lie group operations and Jacobians needed in practice for SO(3) and SE(3). | [[arXiv]](https://arxiv.org/abs/1812.01537) [[GitHub]](https://github.com/artivis/manif) |
 | On the Continuity of Rotation Representations in Neural Networks | 2019 | Proves that rotation representations with four or fewer dimensions are discontinuous for learning and proposes continuous 5D and 6D alternatives. | [[arXiv]](https://arxiv.org/abs/1812.07035) |
 | An Analysis of SVD for Deep Rotation Estimation | 2020 | Shows that projecting a 9D network output onto SO(3) with the singular value decomposition is a simple and strong rotation head. | [[arXiv]](https://arxiv.org/abs/2006.14616) |
 | Deep Regression on Manifolds: A 3D Rotation Case Study | 2021 | Studies differentiable mappings onto rotation manifolds for regression and releases the RoMa rotation library. | [[arXiv]](https://arxiv.org/abs/2103.16317) [[GitHub]](https://github.com/naver/roma) |
@@ -741,10 +828,6 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 ### 🔙 Inverse Kinematics
 
 > **Inverse kinematics** runs the forward map backward: given a desired pose, find the joint values that produce it. The problem may have several solutions, infinitely many, or none, and the three families below differ in how they deal with that.
-
-<p align="center">
-  <img src="figures/inverse_kinematics.gif" alt="Animation of a two-joint arm reaching a moving target with both its elbow-up and elbow-down solutions" width="600">
-</p>
 
 #### 🧮 Analytical Inverse Kinematics
 
@@ -791,11 +874,9 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 | Damped Least Squares (Wampler) | 1986 | Adds damping to the pseudoinverse so that joint velocities stay bounded near singularities. | [[SMC]](https://doi.org/10.1109/TSMC.1986.289285) |
 | Singularity-Robust Inverse | 1986 | Independently proposes the damped pseudoinverse and analyzes the trade-off between tracking accuracy and feasibility. | [[JDSMC]](https://doi.org/10.1115/1.3143764) |
 | Cyclic Coordinate Descent | 1991 | Combines per-joint coordinate descent with a quasi-Newton refinement for fast, derivative-light IK. | [[TRA]](https://doi.org/10.1109/70.86079) |
-| Introduction to Inverse Kinematics | 2004 | Widely used tutorial comparing the Jacobian transpose, pseudoinverse, and damped least squares methods. | [[PDF]](https://mathweb.ucsd.edu/~sbuss/ResearchWeb/ikmethods/iksurvey.pdf) |
 | Selectively Damped Least Squares | 2005 | Damps each singular direction separately according to how hard it is to reach the target, improving convergence over uniform damping. | [[JGT]](https://doi.org/10.1080/2151237X.2005.10129202) |
 | FABRIK | 2011 | Forward and backward reaching IK that works on joint positions along lines instead of rotation angles; popular in animation. | [[GM]](https://doi.org/10.1016/j.gmod.2011.05.003) |
 | Solvability-Unconcerned IK | 2011 | Levenberg-Marquardt IK with a robust damping rule that converges whether or not the target is reachable. | [[T-RO]](https://doi.org/10.1109/TRO.2011.2148230) |
-| Manipulator Differential Kinematics, Part I | 2022 | Tutorial that derives numerical IK and resolved-rate control from the elementary transform sequence, with runnable notebooks. | [[arXiv]](https://arxiv.org/abs/2207.01796) [[GitHub]](https://github.com/jhavl/dkt) |
 
 ##### 🎚 **Optimization-based & Multi-Objective IK**
 
@@ -844,7 +925,6 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 | Dexterity Measures for Redundant Manipulators | 1987 | Compares determinant, condition number, minimum singular value, and joint-range measures for design and control. | [[IJRR]](https://doi.org/10.1177/027836498700600206) |
 | Singularity Analysis of Closed-Loop Kinematic Chains | 1990 | Classifies singularities into three types using the two Jacobians of a closed chain; the standard taxonomy for parallel robots. | [[TRA]](https://doi.org/10.1109/70.56660) |
 | Geometry-Aware Manipulability Learning, Tracking and Transfer | 2021 | Treats manipulability ellipsoids as points on the manifold of symmetric positive definite matrices to learn and track them. | [[arXiv]](https://arxiv.org/abs/1811.11050) |
-| Manipulator Differential Kinematics, Part II | 2022 | Tutorial on the manipulator Hessian, higher-order derivatives, and their use in manipulability-maximizing control. | [[arXiv]](https://arxiv.org/abs/2207.01794) [[GitHub]](https://github.com/jhavl/dkt) |
 
 #### 🧩 **Redundancy Resolution & Task Priority**
 
@@ -855,7 +935,6 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 | Paper | Year | Description | Links |
 |-------|------|-------------|-------|
 | Automatic Supervisory Control of Multibody Mechanisms | 1977 | Introduces null-space projection of a secondary objective gradient, the basis of redundancy resolution. | [[SMC]](https://doi.org/10.1109/TSMC.1977.4309644) |
-| Review of Pseudoinverse Control | 1983 | Analyzes pseudoinverse control of redundant manipulators, including its non-repeatability over closed paths. | [[SMC]](https://doi.org/10.1109/TSMC.1983.6313123) |
 | Operational Space Formulation | 1987 | Unified framework for motion and force control in task space, including the dynamically consistent treatment of redundancy. | [[JRA]](https://doi.org/10.1109/JRA.1987.1087068) |
 | Task-Priority Based Redundancy Control | 1987 | Formalizes executing a secondary task only in the null space of a primary one. | [[IJRR]](https://doi.org/10.1177/027836498700600201) |
 | A General Framework for Managing Multiple Tasks | 1991 | Recursive formulation extending task priority to any number of levels for highly redundant systems. | [[ICAR]](https://doi.org/10.1109/ICAR.1991.240390) |
@@ -912,7 +991,6 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 | An Algorithm for Solving the Direct Kinematics of General Stewart-Gough Platforms | 1996 | Derives the 40th-degree univariate polynomial for the forward kinematics using kinematic mapping. | [[MMT]](https://doi.org/10.1016/0094-114X%2895%2900091-C) |
 | The Stewart-Gough Platform of General Geometry Can Have 40 Real Postures | 1998 | Constructs a platform geometry for which all 40 forward kinematic solutions are real. | [[Springer]](https://doi.org/10.1007/978-94-015-9064-8_1) |
 | Constraint Singularities of Parallel Mechanisms | 2002 | Identifies a class of singularities in lower-mobility parallel mechanisms where the platform gains unwanted degrees of freedom. | [[ICRA]](https://doi.org/10.1109/ROBOT.2002.1013408) |
-| Parallel Robots | 2006 | The reference monograph on parallel robot architectures, kinematics, singularities, workspace, and calibration. | [[Springer]](https://doi.org/10.1007/1-4020-4133-0) |
 
 ---
 
@@ -985,10 +1063,8 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 | Kinematics for Multisection Continuum Robots | 2006 | Modular formulation of multisection constant-curvature kinematics that handles the straight-section singularity. | [[T-RO]](https://doi.org/10.1109/TRO.2005.861458) |
 | Design and Control of Concentric-Tube Robots | 2010 | Derives the kinematics of precurved concentric tubes including torsion and uses it for real-time position control. | [[T-RO]](https://doi.org/10.1109/TRO.2009.2035740) |
 | Geometrically Exact Model for Externally Loaded Concentric-Tube Robots | 2010 | Cosserat rod model predicting concentric-tube shape under external forces and moments. | [[T-RO]](https://doi.org/10.1109/TRO.2010.2062570) |
-| Constant Curvature Continuum Robots: A Review | 2010 | Unifies the constant-curvature literature into robot-specific and robot-independent kinematic mappings. | [[IJRR]](https://doi.org/10.1177/0278364910368147) |
 | Discrete Cosserat Approach for Multisection Soft Manipulator Dynamics | 2018 | Piecewise constant strain model that generalizes rigid-robot screw-theoretic recursion to soft manipulators. | [[T-RO]](https://doi.org/10.1109/TRO.2018.2868815) |
 | An Improved State Parametrization for Piecewise Constant Curvature | 2020 | Proposes a singularity-free parameterization for piecewise constant curvature soft robots suited to model-based control. | [[RA-L]](https://doi.org/10.1109/LRA.2020.2967269) |
-| Soft Robots Modeling: A Structured Overview | 2023 | Organizes soft robot models (continuum mechanics, geometric, discrete material, surrogate) in a common framework. | [[arXiv]](https://arxiv.org/abs/2112.03645) |
 
 ---
 
@@ -1029,7 +1105,6 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 | A Global Performance Index for Kinematic Optimization | 1991 | Integrates the Jacobian condition number over the workspace into a single global conditioning index for design. | [[JMD]](https://doi.org/10.1115/1.2912772) |
 | Capturing Robot Workspace Structure | 2007 | Introduces the capability map, a discretized representation of the directions from which each workspace region can be reached. | [[IROS]](https://doi.org/10.1109/IROS.2007.4399105) |
 | Robot Placement Based on Reachability Inversion | 2013 | Inverts a reachability map to find base poses from which a target grasp is reachable. | [[ICRA]](https://doi.org/10.1109/ICRA.2013.6630839) |
-| Manipulator Performance Measures: A Comprehensive Literature Survey | 2015 | Surveys local and global kinematic performance indices and their limitations. | [[JINT]](https://doi.org/10.1007/s10846-014-0024-y) |
 | Reuleaux | 2018 | Open-source reachability-map generation and robot base placement for task sequences. | [[arXiv]](https://arxiv.org/abs/1710.01328) [[GitHub]](https://github.com/ros-industrial-attic/reuleaux) |
 
 ---
@@ -1176,34 +1251,33 @@ Kinematics has no single leaderboard comparable to those in perception. Evaluati
 
 1. Klein and Huang, "Review of Pseudoinverse Control for Use with Kinematically Redundant Manipulators," IEEE Trans. SMC, 1983. [[DOI]](https://doi.org/10.1109/TSMC.1983.6313123)
 2. Siciliano, "Kinematic Control of Redundant Robot Manipulators: A Tutorial," Journal of Intelligent and Robotic Systems, 1990. [[DOI]](https://doi.org/10.1007/BF00126069)
-3. Hollerbach and Wampler, "The Calibration Index and Taxonomy for Robot Kinematic Calibration Methods," IJRR, 1996. [[DOI]](https://doi.org/10.1177/027836499601500604)
-4. Buss, "Introduction to Inverse Kinematics with Jacobian Transpose, Pseudoinverse and Damped Least Squares Methods," 2004. [[PDF]](https://mathweb.ucsd.edu/~sbuss/ResearchWeb/ikmethods/iksurvey.pdf)
-5. Webster and Jones, "Design and Kinematic Modeling of Constant Curvature Continuum Robots: A Review," IJRR, 2010. [[DOI]](https://doi.org/10.1177/0278364910368147)
-6. Burgner-Kahrs, Rucker, and Choset, "Continuum Robots for Medical Applications: A Survey," IEEE T-RO, 2015. [[DOI]](https://doi.org/10.1109/TRO.2015.2489500)
-7. Patel and Sobh, "Manipulator Performance Measures: A Comprehensive Literature Survey," Journal of Intelligent and Robotic Systems, 2015. [[DOI]](https://doi.org/10.1007/s10846-014-0024-y)
-8. Waldron and Schmiedeler, "Kinematics," Springer Handbook of Robotics, 2nd ed., 2016. [[DOI]](https://doi.org/10.1007/978-3-319-32552-1_2)
-9. Chiaverini, Oriolo, and Maciejewski, "Redundant Robots," Springer Handbook of Robotics, 2nd ed., 2016. [[DOI]](https://doi.org/10.1007/978-3-319-32552-1_10)
-10. Aristidou, Lasenby, Chrysanthou, and Shamir, "Inverse Kinematics Techniques in Computer Graphics: A Survey," Computer Graphics Forum, 2018. [[DOI]](https://doi.org/10.1111/cgf.13310)
-11. Solà, Deray, and Atchuthan, "A Micro Lie Theory for State Estimation in Robotics," 2018. [[arXiv]](https://arxiv.org/abs/1812.01537)
-12. Haviland and Corke, "Manipulator Differential Kinematics: Part I: Kinematics, Velocity, and Applications," IEEE RAM, 2023. [[arXiv]](https://arxiv.org/abs/2207.01796)
-13. Haviland and Corke, "Manipulator Differential Kinematics: Part II: Acceleration and Advanced Applications," IEEE RAM, 2023. [[arXiv]](https://arxiv.org/abs/2207.01794)
-14. Della Santina, Duriez, and Rus, "Model-Based Control of Soft Robots: A Survey of the State of the Art and Open Challenges," IEEE Control Systems Magazine, 2023. [[arXiv]](https://arxiv.org/abs/2110.01358)
-15. Armanini et al., "Soft Robots Modeling: A Structured Overview," IEEE T-RO, 2023. [[arXiv]](https://arxiv.org/abs/2112.03645)
+3. Buss, "Introduction to Inverse Kinematics with Jacobian Transpose, Pseudoinverse and Damped Least Squares Methods," 2004. [[PDF]](https://mathweb.ucsd.edu/~sbuss/ResearchWeb/ikmethods/iksurvey.pdf)
+4. Webster and Jones, "Design and Kinematic Modeling of Constant Curvature Continuum Robots: A Review," IJRR, 2010. [[DOI]](https://doi.org/10.1177/0278364910368147)
+5. Burgner-Kahrs, Rucker, and Choset, "Continuum Robots for Medical Applications: A Survey," IEEE T-RO, 2015. [[DOI]](https://doi.org/10.1109/TRO.2015.2489500)
+6. Patel and Sobh, "Manipulator Performance Measures: A Comprehensive Literature Survey," Journal of Intelligent and Robotic Systems, 2015. [[DOI]](https://doi.org/10.1007/s10846-014-0024-y)
+7. Waldron and Schmiedeler, "Kinematics," Springer Handbook of Robotics, 2nd ed., 2016. [[DOI]](https://doi.org/10.1007/978-3-319-32552-1_2)
+8. Chiaverini, Oriolo, and Maciejewski, "Redundant Robots," Springer Handbook of Robotics, 2nd ed., 2016. [[DOI]](https://doi.org/10.1007/978-3-319-32552-1_10)
+9. Aristidou, Lasenby, Chrysanthou, and Shamir, "Inverse Kinematics Techniques in Computer Graphics: A Survey," Computer Graphics Forum, 2018. [[DOI]](https://doi.org/10.1111/cgf.13310)
+10. Solà, Deray, and Atchuthan, "A Micro Lie Theory for State Estimation in Robotics," 2018. [[arXiv]](https://arxiv.org/abs/1812.01537)
+11. Haviland and Corke, "Manipulator Differential Kinematics: Part I: Kinematics, Velocity, and Applications," IEEE RAM, 2023. [[arXiv]](https://arxiv.org/abs/2207.01796) [[GitHub]](https://github.com/jhavl/dkt)
+12. Haviland and Corke, "Manipulator Differential Kinematics: Part II: Acceleration and Advanced Applications," IEEE RAM, 2023. [[arXiv]](https://arxiv.org/abs/2207.01794)
+13. Della Santina, Duriez, and Rus, "Model-Based Control of Soft Robots: A Survey of the State of the Art and Open Challenges," IEEE Control Systems Magazine, 2023. [[arXiv]](https://arxiv.org/abs/2110.01358)
+14. Armanini et al., "Soft Robots Modeling: A Structured Overview," IEEE T-RO, 2023. [[arXiv]](https://arxiv.org/abs/2112.03645)
 
 ### Books & Courses
 
-16. Murray, Li, and Sastry, *A Mathematical Introduction to Robotic Manipulation*, CRC Press, 1994. [[Website]](https://www.cds.caltech.edu/~murray/mlswiki/index.php/Main_Page)
-17. Craig, *Introduction to Robotics: Mechanics and Control*, Pearson, 4th ed., 2017.
-18. Spong, Hutchinson, and Vidyasagar, *Robot Modeling and Control*, Wiley, 2nd ed., 2020.
-19. Siciliano, Sciavicco, Villani, and Oriolo, *Robotics: Modelling, Planning and Control*, Springer, 2009. [[DOI]](https://doi.org/10.1007/978-1-84628-642-1)
-20. Lynch and Park, *Modern Robotics: Mechanics, Planning, and Control*, Cambridge University Press, 2017. [[Website]](http://modernrobotics.org)
-21. Corke, *Robotics, Vision and Control: Fundamental Algorithms in Python*, Springer, 3rd ed., 2023. [[DOI]](https://doi.org/10.1007/978-3-031-06469-2)
-22. Selig, *Geometric Fundamentals of Robotics*, Springer, 2nd ed., 2005. [[DOI]](https://doi.org/10.1007/b138859)
-23. Featherstone, *Rigid Body Dynamics Algorithms*, Springer, 2008. [[DOI]](https://doi.org/10.1007/978-1-4899-7560-7)
-24. Merlet, *Parallel Robots*, Springer, 2nd ed., 2006. [[DOI]](https://doi.org/10.1007/1-4020-4133-0)
-25. Siegwart, Nourbakhsh, and Scaramuzza, *Introduction to Autonomous Mobile Robots*, MIT Press, 2nd ed., 2011. [[MIT Press]](https://mitpress.mit.edu/9780262015356/introduction-to-autonomous-mobile-robots/)
-26. Siciliano and Khatib (eds.), *Springer Handbook of Robotics*, Springer, 2nd ed., 2016. [[DOI]](https://doi.org/10.1007/978-3-319-32552-1)
-27. Tedrake, *Robotic Manipulation: Perception, Planning, and Control*, MIT course notes. [[Website]](https://manipulation.csail.mit.edu/)
+15. Murray, Li, and Sastry, *A Mathematical Introduction to Robotic Manipulation*, CRC Press, 1994. [[Website]](https://www.cds.caltech.edu/~murray/mlswiki/index.php/Main_Page)
+16. Craig, *Introduction to Robotics: Mechanics and Control*, Pearson, 4th ed., 2017.
+17. Spong, Hutchinson, and Vidyasagar, *Robot Modeling and Control*, Wiley, 2nd ed., 2020.
+18. Siciliano, Sciavicco, Villani, and Oriolo, *Robotics: Modelling, Planning and Control*, Springer, 2009. [[DOI]](https://doi.org/10.1007/978-1-84628-642-1)
+19. Lynch and Park, *Modern Robotics: Mechanics, Planning, and Control*, Cambridge University Press, 2017. [[Website]](http://modernrobotics.org)
+20. Corke, *Robotics, Vision and Control: Fundamental Algorithms in Python*, Springer, 3rd ed., 2023. [[DOI]](https://doi.org/10.1007/978-3-031-06469-2)
+21. Selig, *Geometric Fundamentals of Robotics*, Springer, 2nd ed., 2005. [[DOI]](https://doi.org/10.1007/b138859)
+22. Featherstone, *Rigid Body Dynamics Algorithms*, Springer, 2008. [[DOI]](https://doi.org/10.1007/978-1-4899-7560-7)
+23. Merlet, *Parallel Robots*, Springer, 2nd ed., 2006. [[DOI]](https://doi.org/10.1007/1-4020-4133-0)
+24. Siegwart, Nourbakhsh, and Scaramuzza, *Introduction to Autonomous Mobile Robots*, MIT Press, 2nd ed., 2011. [[MIT Press]](https://mitpress.mit.edu/9780262015356/introduction-to-autonomous-mobile-robots/)
+25. Siciliano and Khatib (eds.), *Springer Handbook of Robotics*, Springer, 2nd ed., 2016. [[DOI]](https://doi.org/10.1007/978-3-319-32552-1)
+26. Tedrake, *Robotic Manipulation: Perception, Planning, and Control*, MIT course notes. [[Website]](https://manipulation.csail.mit.edu/)
 
 ---
 
