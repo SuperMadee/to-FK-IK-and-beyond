@@ -12,7 +12,10 @@
 </div>
 
 <p align="center">
-  <img src="figures/teaser.gif" alt="Teaser animation: a path in joint space maps through a two-joint arm to a path in task space by forward kinematics, and back by inverse kinematics, with the Jacobian relating the two velocities" width="100%">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="figures/teaser_dark.gif">
+    <img src="figures/teaser.gif" alt="Teaser animation: a path in joint space maps through a two-joint arm to a path in task space by forward kinematics, and back by inverse kinematics, with the Jacobian relating the two velocities" width="100%">
+  </picture>
 </p>
 
 ---
@@ -183,7 +186,10 @@ x = a_1 c_1 + a_2 c_{12}, \qquad y = a_1 s_1 + a_2 s_{12}, \qquad \phi = \theta_
 ```
 
 <p align="center">
-  <img src="figures/forward_kinematics.gif" alt="Animation of a three-joint planar arm whose end-effector position is computed from its joint angles" width="640">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="figures/forward_kinematics_dark.gif">
+    <img src="figures/forward_kinematics.gif" alt="Animation of a three-joint planar arm whose end-effector position is computed from its joint angles" width="640">
+  </picture>
 </p>
 
 | Mechanism | Forward Kinematics | Why |
@@ -225,7 +231,10 @@ for $q$. The equations are nonlinear in the joint angles, so three things that a
 The two signs of $\theta_2$ are the elbow-down and elbow-up solutions. For 6-joint arms, a closed form is guaranteed when three consecutive joint axes intersect at a point (Pieper's condition, met by a spherical wrist), because the problem then splits into a position problem for the first three joints and an orientation problem for the last three.
 
 <p align="center">
-  <img src="figures/inverse_kinematics.gif" alt="Animation of a two-joint arm reaching a moving target with both its elbow-up and elbow-down solutions" width="640">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="figures/inverse_kinematics_dark.gif">
+    <img src="figures/inverse_kinematics.gif" alt="Animation of a two-joint arm reaching a moving target with both its elbow-up and elbow-down solutions" width="640">
+  </picture>
 </p>
 
 **Numerical solution.** For any other arm, start from a guess and repeatedly correct it using the pose error $e$ and the Jacobian $J$ (introduced in the next section). The Newton-Raphson step and its damped least squares variant, which stays well behaved near singularities, are
@@ -285,7 +294,10 @@ a_1 c_1 + a_2 c_{12} & a_2 c_{12}
 so the arm is singular exactly when $\theta_2 = 0$ or $\theta_2 = \pi$, that is, when it is fully stretched out or folded back on itself.
 
 <p align="center">
-  <img src="figures/jacobian_matrix.gif" alt="Animation of a two-joint arm showing the two columns of its Jacobian as velocity arrows at the end-effector" width="640">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="figures/jacobian_matrix_dark.gif">
+    <img src="figures/jacobian_matrix.gif" alt="Animation of a two-joint arm showing the two columns of its Jacobian as velocity arrows at the end-effector" width="640">
+  </picture>
 </p>
 
 | Use | Relation | What It Gives |
@@ -448,7 +460,10 @@ Four solved problems, each starting from a Denavit-Hartenberg table and worked w
 </div>
 
 <p align="center">
-  <img src="figures/example_forward_kinematics.gif" alt="Animation solving the forward kinematics of a planar three-joint arm from its Denavit-Hartenberg table, one link transform at a time" width="640">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="figures/example_forward_kinematics_dark.gif">
+    <img src="figures/example_forward_kinematics.gif" alt="Animation solving the forward kinematics of a planar three-joint arm from its Denavit-Hartenberg table, one link transform at a time" width="640">
+  </picture>
 </p>
 
 **Solution.**
@@ -523,7 +538,10 @@ T_3^0 = A_1 A_2 A_3 =
 </div>
 
 <p align="center">
-  <img src="figures/example_inverse_kinematics.gif" alt="Animation solving the inverse kinematics of a planar two-joint arm from its Denavit-Hartenberg table, ending with the elbow-down and elbow-up solutions" width="640">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="figures/example_inverse_kinematics_dark.gif">
+    <img src="figures/example_inverse_kinematics.gif" alt="Animation solving the inverse kinematics of a planar two-joint arm from its Denavit-Hartenberg table, ending with the elbow-down and elbow-up solutions" width="640">
+  </picture>
 </p>
 
 **Solution.**
@@ -585,7 +603,10 @@ c_1 + 0.8\,c_{12} = 1.2, \qquad s_1 + 0.8\,s_{12} = 0.9
 </div>
 
 <p align="center">
-  <img src="figures/example_jacobian.gif" alt="Animation building the Jacobian of a planar two-joint arm from its Denavit-Hartenberg transforms, column by column, then combining the columns into the end-effector velocity" width="640">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="figures/example_jacobian_dark.gif">
+    <img src="figures/example_jacobian.gif" alt="Animation building the Jacobian of a planar two-joint arm from its Denavit-Hartenberg transforms, column by column, then combining the columns into the end-effector velocity" width="640">
+  </picture>
 </p>
 
 **Solution.**
@@ -657,7 +678,10 @@ v = J\,\dot\theta = 0.5 \begin{bmatrix} -1.300 \\ 0.866 \end{bmatrix} - 1.0 \beg
 </div>
 
 <p align="center">
-  <img src="figures/example_spatial_arm.gif" alt="Animation of a spatial three-joint arm solved with transformation matrices: three link transforms are chained into the tip pose, then the Jacobian columns and the tip velocity are drawn" width="640">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="figures/example_spatial_arm_dark.gif">
+    <img src="figures/example_spatial_arm.gif" alt="Animation of a spatial three-joint arm solved with transformation matrices: three link transforms are chained into the tip pose, then the Jacobian columns and the tip velocity are drawn" width="640">
+  </picture>
 </p>
 
 **Solution.**
@@ -889,7 +913,10 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 > **Numerical IK** iterates toward a solution instead of deriving one. It works for any mechanism and any set of constraints, at the price of needing an initial guess and returning one local solution at a time.
 
 <p align="center">
-  <img src="figures/numerical_ik.gif" alt="Animation of damped least squares iterations moving a three-joint arm toward a target" width="640">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="figures/numerical_ik_dark.gif">
+    <img src="figures/numerical_ik.gif" alt="Animation of damped least squares iterations moving a three-joint arm toward a target" width="640">
+  </picture>
 </p>
 
 ##### 📉 **Jacobian-based Iterative Methods**
@@ -941,7 +968,10 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 #### 🧭 **Manipulability & Singularities**
 
 <p align="center">
-  <img src="figures/manipulability_ellipse.gif" alt="Animation of the manipulability ellipse of a two-joint arm collapsing as the arm approaches a singularity" width="640">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="figures/manipulability_ellipse_dark.gif">
+    <img src="figures/manipulability_ellipse.gif" alt="Animation of the manipulability ellipse of a two-joint arm collapsing as the arm approaches a singularity" width="640">
+  </picture>
 </p>
 
 | Paper | Year | Description | Links |
@@ -955,7 +985,10 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 #### 🧩 **Redundancy Resolution & Task Priority**
 
 <p align="center">
-  <img src="figures/null_space_motion.gif" alt="Animation of a three-joint arm changing its joint angles while its end-effector position stays fixed" width="640">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="figures/null_space_motion_dark.gif">
+    <img src="figures/null_space_motion.gif" alt="Animation of a three-joint arm changing its joint angles while its end-effector position stays fixed" width="640">
+  </picture>
 </p>
 
 | Paper | Year | Description | Links |
@@ -1007,7 +1040,10 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 > **Parallel robots** connect the end-effector to the base through several chains. Their inverse kinematics is usually trivial; their forward kinematics and singularity structure are among the hardest problems in the field.
 
 <p align="center">
-  <img src="figures/parallel_five_bar.gif" alt="Animation of a five-bar parallel mechanism tracing a closed path with two actuated joints" width="640">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="figures/parallel_five_bar_dark.gif">
+    <img src="figures/parallel_five_bar.gif" alt="Animation of a five-bar parallel mechanism tracing a closed path with two actuated joints" width="640">
+  </picture>
 </p>
 
 | Paper | Year | Description | Links |
@@ -1025,7 +1061,10 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 > **Mobile robot kinematics** is governed by rolling constraints. Because a wheel cannot slip sideways, the robot can reach any pose in the plane but cannot move in every direction at every instant.
 
 <p align="center">
-  <img src="figures/mobile_robot_kinematics.gif" alt="Animation of a kinematic bicycle model following a figure-eight path with pure pursuit" width="640">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="figures/mobile_robot_kinematics_dark.gif">
+    <img src="figures/mobile_robot_kinematics.gif" alt="Animation of a kinematic bicycle model following a figure-eight path with pure pursuit" width="640">
+  </picture>
 </p>
 
 | Paper | Year | Description | Links |
@@ -1079,7 +1118,10 @@ A side-by-side view of widely used inverse kinematics solvers, one per design fa
 > **Continuum robots** bend along their whole length. Their kinematics maps actuator inputs (tendon lengths, tube rotations, chamber pressures) to a backbone shape, and for soft or slender robots that shape depends on elasticity and external loads as well as geometry.
 
 <p align="center">
-  <img src="figures/continuum_robot.gif" alt="Animation of a two-section constant-curvature continuum robot bending as its curvatures change" width="640">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="figures/continuum_robot_dark.gif">
+    <img src="figures/continuum_robot.gif" alt="Animation of a two-section constant-curvature continuum robot bending as its curvatures change" width="640">
+  </picture>
 </p>
 
 | Paper | Year | Description | Links |
@@ -1316,7 +1358,7 @@ If you find this repository useful, please consider citing it:
   title        = {To FK, IK, and Beyond! From Joint Angles to Task Space (and the Math in Between)},
   author       = {SuperMadee},
   year         = {2026},
-  howpublished = {\url{https://github.com/SuperMadee/to-fk-ik-and-beyond}}
+  howpublished = {\url{https://github.com/SuperMadee/to-FK-IK-and-beyond}}
 }
 ```
 
@@ -1332,7 +1374,7 @@ Contributions are welcome! If you'd like to add new papers, fix errors, or sugge
    `| Name | Year | One-sentence description of the key idea. | [[arXiv]](link) [[GitHub]](link) |`
 4. Submit a pull request
 
-The animations live in [`figures/`](figures/) as GIF and MP4 and are generated by `figures/make_animations.py`; edit the script and re-run it to change or add one.
+The animations live in [`figures/`](figures/) and are generated by `figures/make_animations.py`; edit the script and re-run it to change or add one. Each animation has two GIFs with transparent backgrounds, `name.gif` for light pages and `name_dark.gif` for dark pages, plus `name.mp4` on a white background.
 
 Please make sure any added paper includes:
 
